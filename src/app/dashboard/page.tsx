@@ -58,9 +58,8 @@ export default function DashboardPage() {
         const listings    = listingsRes.data.data ?? [];
         setRecentListings(listings);
 
-        // Calculate stats from listings
-        const active     = listings.filter((l: ListingCard) => l.status === "active").length;
-        const totalViews = 0; // Would come from a dedicated stats endpoint
+        const active = listings.length;
+        const totalViews = 0;
 
         setStats({
           totalListings:  listingsRes.data.meta?.total_items ?? listings.length,
@@ -139,14 +138,14 @@ export default function DashboardPage() {
       label:   "Total Listings",
       value:   stats?.totalListings ?? 0,
       icon:    Car,
-      color:   "bg-brand-50 text-brand-600",
+      color:   "bg-neutral-50 text-neutral-700",
       href:    "/dashboard/listings",
     },
     {
       label:   "Active Listings",
       value:   stats?.activeListings ?? 0,
       icon:    CheckCircle2,
-      color:   "bg-emerald-50 text-emerald-600",
+      color:   "bg-neutral-50 text-emerald-600",
       href:    "/dashboard/listings",
     },
     {
@@ -160,33 +159,28 @@ export default function DashboardPage() {
       label:   "Open Inquiries",
       value:   stats?.openInquiries ?? 0,
       icon:    MessageSquare,
-      color:   "bg-amber-50 text-amber-600",
+      color:   "bg-neutral-50 text-amber-600",
       href:    "/dashboard/inbox",
     },
   ];
 
   return (
     <div className="space-y-6">
-
-      {/* ── Welcome header ────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-navy to-brand-700 rounded-2xl p-6 text-white">
+      <div className="bg-white rounded-xl border border-neutral-200 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-blue-200/70 text-sm mb-1">Good day 👋</p>
-            <h1 className="font-display text-2xl font-bold">
+            <p className="text-neutral-500 text-sm mb-1">Overview</p>
+            <h1 className="text-xl font-semibold text-neutral-900">
               {user?.full_name?.split(" ")[0]}
             </h1>
-            <p className="text-blue-100/70 text-sm mt-1 capitalize">
-              {user?.role} account
-              {showVerifiedBadge && " · Verified ✓"}
-            </p>
+            <p className="text-neutral-500 text-sm mt-1 capitalize">{user?.role} account</p>
           </div>
           {isSeller && isApproved && (
             <Link href="/dashboard/listings/new">
               <Button
                 variant="navy"
                 size="sm"
-                className="bg-white text-navy hover:bg-blue-50 shrink-0"
+                className="bg-white text-neutral-900 hover:bg-blue-50 shrink-0"
                 leftIcon={<PlusCircle className="w-4 h-4" />}
               >
                 New Listing
@@ -197,19 +191,19 @@ export default function DashboardPage() {
       </div>
 
       {isAdmin && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="bg-white rounded-2xl border border-neutral-200  p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-semibold text-slate-900">Review seller submissions</p>
-            <p className="text-sm text-slate-500">
+            <p className="font-semibold text-neutral-900">Review seller submissions</p>
+            <p className="text-sm text-neutral-500">
               Approve dealer and private seller profiles so verified sellers stand out on the marketplace.
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
-                <Building2 className="w-3.5 h-3.5 text-brand-600" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 text-xs font-semibold text-neutral-700">
+                <Building2 className="w-3.5 h-3.5 text-neutral-700" />
                 {formatPendingLabel(pendingCounts.dealers, "dealer")}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
-                <UserCheck className="w-3.5 h-3.5 text-brand-600" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 text-xs font-semibold text-neutral-700">
+                <UserCheck className="w-3.5 h-3.5 text-neutral-700" />
                 {formatPendingLabel(pendingCounts.sellers, "seller")}
               </span>
             </div>
@@ -226,7 +220,7 @@ export default function DashboardPage() {
             </Link>
             <Link
               href="/dashboard/admin/verified"
-              className="text-xs font-semibold text-brand-700 hover:text-brand-800 text-right"
+              className="text-xs font-semibold text-neutral-900 hover:text-brand-800 text-right"
             >
               Browse verified sellers →
             </Link>
@@ -236,7 +230,7 @@ export default function DashboardPage() {
 
       {/* ── Approval status banner ────────────────────────────────────── */}
       {isSeller && !approvalStatus && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
+        <div className="bg-neutral-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
           <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
             <AlertCircle className="w-5 h-5 text-amber-600" />
           </div>
@@ -244,12 +238,12 @@ export default function DashboardPage() {
             <p className="font-semibold text-amber-900 mb-1">
               Complete your seller profile
             </p>
-            <p className="text-sm text-amber-700 mb-3">
+            <p className="text-sm text-neutral-700 mb-3">
               You need an approved dealer or private seller profile before you can list vehicles.
             </p>
             <div className="flex flex-wrap gap-2">
               <Link href="/dealers/profile/new">
-                <Button variant="warning" size="sm" className="bg-amber-600 text-white hover:bg-amber-700 border-0">
+                <Button variant="primary" size="sm">
                   Create Dealer Profile
                 </Button>
               </Link>
@@ -268,7 +262,7 @@ export default function DashboardPage() {
           "rounded-2xl p-5 flex items-start gap-4 border",
           approvalStatus === "pending"
             ? "bg-blue-50 border-blue-200"
-            : "bg-red-50 border-red-200"
+            : "bg-neutral-50 border-neutral-200"
         )}>
           <div className={cn(
             "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
@@ -291,7 +285,7 @@ export default function DashboardPage() {
             </p>
             <p className={cn(
               "text-sm",
-              approvalStatus === "pending" ? "text-blue-700" : "text-red-700"
+              approvalStatus === "pending" ? "text-blue-700" : "text-neutral-700"
             )}>
               {approvalStatus === "pending"
                 ? "Our team is reviewing your seller profile. You'll be able to list cars once approved."
@@ -311,15 +305,15 @@ export default function DashboardPage() {
               <Link
                 key={card.label}
                 href={card.href}
-                className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
+                className="bg-white rounded-2xl p-5 border border-neutral-200  hover:-hover hover:-translate-y-0.5 transition-all"
               >
                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-3", card.color)}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <p className="font-display text-2xl font-bold text-slate-900">
+                <p className="font-display text-2xl font-bold text-neutral-900">
                   {loading ? "—" : card.value.toLocaleString()}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">{card.label}</p>
+                <p className="text-xs text-neutral-500 mt-1">{card.label}</p>
               </Link>
             );
           })}
@@ -328,12 +322,12 @@ export default function DashboardPage() {
 
       {/* ── Recent listings ───────────────────────────────────────────── */}
       {isSeller && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-            <h2 className="font-display font-bold text-slate-900">Recent Listings</h2>
+        <div className="bg-white rounded-2xl border border-neutral-200  overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
+            <h2 className="font-display font-bold text-neutral-900">Recent Listings</h2>
             <Link
               href="/dashboard/listings"
-              className="text-sm font-semibold text-brand-700 hover:text-brand-800 flex items-center gap-1 transition-colors"
+              className="text-sm font-semibold text-neutral-900 hover:text-brand-800 flex items-center gap-1 transition-colors"
             >
               View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -353,11 +347,11 @@ export default function DashboardPage() {
             </div>
           ) : recentListings.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-3">
                 <Car className="w-7 h-7 text-slate-300" strokeWidth={1.5} />
               </div>
-              <p className="font-semibold text-slate-700 mb-1">No listings yet</p>
-              <p className="text-sm text-slate-400 mb-4">
+              <p className="font-semibold text-neutral-700 mb-1">No listings yet</p>
+              <p className="text-sm text-neutral-400 mb-4">
                 {isApproved
                   ? "Create your first listing to start selling"
                   : "Get your profile approved to start listing"
@@ -374,9 +368,9 @@ export default function DashboardPage() {
           ) : (
             <div className="divide-y divide-slate-50">
               {recentListings.map((listing: any) => (
-                <div key={listing.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors">
+                <div key={listing.id} className="flex items-center gap-4 px-6 py-4 hover:bg-neutral-50 transition-colors">
                   {/* Thumbnail */}
-                  <div className="w-20 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+                  <div className="w-20 h-16 rounded-xl bg-neutral-100 overflow-hidden shrink-0">
                     {listing.thumbnail_url ? (
                       <img
                         src={listing.thumbnail_url}
@@ -384,15 +378,15 @@ export default function DashboardPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">🚗</div>
+                      <div className="w-full h-full flex items-center justify-center text-2xl"></div>
                     )}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900 text-sm truncate">{listing.title}</p>
-                    <p className="text-brand-700 font-bold text-sm">{formatKES(listing.price_kes)}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{timeAgo(listing.created_at)}</p>
+                    <p className="font-semibold text-neutral-900 text-sm truncate">{listing.title}</p>
+                    <p className="text-neutral-900 font-bold text-sm">{formatKES(listing.price_kes)}</p>
+                    <p className="text-xs text-neutral-400 mt-0.5">{timeAgo(listing.created_at)}</p>
                   </div>
 
                   {/* Status + actions */}
@@ -400,7 +394,7 @@ export default function DashboardPage() {
                     <ListingStatusBadge status={listing.status} />
                     <Link
                       href={`/dashboard/listings/${listing.id}/edit`}
-                      className="text-xs font-semibold text-brand-700 hover:text-brand-800 transition-colors"
+                      className="text-xs font-semibold text-neutral-900 hover:text-brand-800 transition-colors"
                     >
                       Edit
                     </Link>
@@ -417,27 +411,27 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Link
             href="/listings"
-            className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all flex items-center gap-4"
+            className="bg-white rounded-2xl p-6 border border-neutral-200  hover:-hover hover:-translate-y-0.5 transition-all flex items-center gap-4"
           >
-            <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center">
-              <Car className="w-6 h-6 text-brand-600" />
+            <div className="w-12 h-12 rounded-xl bg-neutral-50 flex items-center justify-center">
+              <Car className="w-6 h-6 text-neutral-700" />
             </div>
             <div>
-              <p className="font-semibold text-slate-900">Browse Cars</p>
-              <p className="text-sm text-slate-500">12,000+ listings available</p>
+              <p className="font-semibold text-neutral-900">Browse Cars</p>
+              <p className="text-sm text-neutral-500">12,000+ listings available</p>
             </div>
             <ArrowRight className="w-5 h-5 text-slate-300 ml-auto" />
           </Link>
           <Link
             href="/favorites"
-            className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all flex items-center gap-4"
+            className="bg-white rounded-2xl p-6 border border-neutral-200  hover:-hover hover:-translate-y-0.5 transition-all flex items-center gap-4"
           >
-            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-red-500" />
+            <div className="w-12 h-12 rounded-xl bg-neutral-50 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-neutral-600" />
             </div>
             <div>
-              <p className="font-semibold text-slate-900">Saved Cars</p>
-              <p className="text-sm text-slate-500">View your favourites</p>
+              <p className="font-semibold text-neutral-900">Saved Cars</p>
+              <p className="text-sm text-neutral-500">View your favourites</p>
             </div>
             <ArrowRight className="w-5 h-5 text-slate-300 ml-auto" />
           </Link>

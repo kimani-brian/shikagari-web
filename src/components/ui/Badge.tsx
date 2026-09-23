@@ -1,21 +1,21 @@
 import { cn } from "@/lib/utils";
 
 const variants = {
-  default:  "bg-slate-100 text-slate-700",
-  primary:  "bg-brand-50 text-brand-700 border border-brand-200",
-  success:  "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  warning:  "bg-amber-50 text-amber-700 border border-amber-200",
-  danger:   "bg-red-50 text-red-700 border border-red-200",
-  navy:     "bg-navy text-white",
-  gold:     "bg-amber-400 text-amber-900",
-  outline:  "bg-transparent border border-slate-300 text-slate-600",
+  default:  "bg-neutral-100 text-neutral-700 border border-neutral-200",
+  primary:  "bg-neutral-900 text-white border border-neutral-900",
+  success:  "bg-neutral-900 text-white border border-neutral-900",
+  warning:  "bg-white text-neutral-700 border border-neutral-300",
+  danger:   "bg-white text-neutral-700 border border-neutral-300",
+  navy:     "bg-neutral-900 text-white border border-neutral-900",
+  gold:     "bg-white text-neutral-700 border border-neutral-300",
+  outline:  "bg-transparent border border-neutral-300 text-neutral-600",
 };
 
 const sizes = {
-  xs: "text-[10px] px-1.5 py-0.5 rounded-md gap-1",
-  sm: "text-xs    px-2   py-0.5 rounded-lg gap-1",
-  md: "text-xs    px-2.5 py-1   rounded-lg gap-1.5",
-  lg: "text-sm    px-3   py-1   rounded-xl gap-1.5",
+  xs: "text-[10px] px-1.5 py-0.5 rounded-full gap-1",
+  sm: "text-xs    px-2   py-0.5 rounded-full gap-1",
+  md: "text-xs    px-2.5 py-1   rounded-full gap-1.5",
+  lg: "text-sm    px-3   py-1   rounded-full gap-1.5",
 };
 
 export interface BadgeProps {
@@ -38,7 +38,7 @@ export default function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center font-semibold whitespace-nowrap",
+        "inline-flex items-center font-medium whitespace-nowrap",
         variants[variant],
         sizes[size],
         className
@@ -47,12 +47,7 @@ export default function Badge({
       {dot && (
         <span
           className={cn(
-            "w-1.5 h-1.5 rounded-full shrink-0",
-            variant === "success" && "bg-emerald-500",
-            variant === "warning" && "bg-amber-500",
-            variant === "danger"  && "bg-red-500",
-            variant === "primary" && "bg-brand-500",
-            !["success","warning","danger","primary"].includes(variant) && "bg-current"
+            "w-1.5 h-1.5 rounded-full shrink-0 bg-neutral-900"
           )}
         />
       )}
@@ -63,40 +58,40 @@ export default function Badge({
 }
 
 export function FuelBadge({ type }: { type: string }) {
-  const map: Record<string, { label: string; variant: BadgeProps["variant"] }> = {
-    petrol:   { label: "Petrol",   variant: "warning" },
-    diesel:   { label: "Diesel",   variant: "default" },
-    hybrid:   { label: "Hybrid",   variant: "success" },
-    electric: { label: "Electric", variant: "primary" },
+  const map: Record<string, string> = {
+    petrol: "Petrol",
+    diesel: "Diesel",
+    hybrid: "Hybrid",
+    electric: "Electric",
   };
-  const config = map[type] ?? { label: type, variant: "default" };
-  return <Badge variant={config.variant} size="sm">{config.label}</Badge>;
+  const label = map[type] ?? type;
+  return <Badge variant="default" size="sm">{label}</Badge>;
 }
 
 export function ApprovalBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; variant: BadgeProps["variant"] }> = {
-    pending:  { label: "Pending Review", variant: "warning" },
-    approved: { label: "Approved",       variant: "success" },
-    rejected: { label: "Rejected",       variant: "danger"  },
+  const map: Record<string, string> = {
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
   };
-  const config = map[status] ?? { label: status, variant: "default" };
+  const label = map[status] ?? status;
   return (
-    <Badge variant={config.variant} size="sm" dot>
-      {config.label}
+    <Badge variant="default" size="sm" dot>
+      {label}
     </Badge>
   );
 }
 
 export function ListingStatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; variant: BadgeProps["variant"] }> = {
-    active:   { label: "Active",   variant: "success" },
-    inactive: { label: "Inactive", variant: "warning" },
-    sold:     { label: "Sold",     variant: "danger"  },
+  const map: Record<string, string> = {
+    active: "Active",
+    inactive: "Inactive",
+    sold: "Sold",
   };
-  const config = map[status] ?? { label: status, variant: "default" };
+  const label = map[status] ?? status;
   return (
-    <Badge variant={config.variant} size="sm" dot>
-      {config.label}
+    <Badge variant="default" size="sm" dot>
+      {label}
     </Badge>
   );
 }

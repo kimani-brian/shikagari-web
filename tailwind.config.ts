@@ -9,77 +9,48 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // ── Brand Colours ──────────────────────────────────────────────
       colors: {
-        brand: {
-          50:  "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e3a8a",
-          900: "#1e2f6b",
-          950: "#0f1729",
+        ink: {
+          50: "#fafafa",
+          100: "#f5f5f5",
+          200: "#e5e5e5",
+          300: "#d4d4d4",
+          400: "#a3a3a3",
+          500: "#737373",
+          600: "#525252",
+          700: "#404040",
+          800: "#262626",
+          900: "#171717",
+          950: "#0a0a0a",
         },
-        navy: {
-          DEFAULT: "#0f1e45",
-          light:   "#1a2f5e",
-          dark:    "#080f22",
-        },
-        gold: {
-          DEFAULT: "#f59e0b",
-          light:   "#fcd34d",
-        },
-        surface: {
-          DEFAULT: "#ffffff",
-          muted:   "#f8fafc",
-          subtle:  "#f1f5f9",
-        },
+        border: "#e5e5e5",
       },
-
-      // ── Typography ────────────────────────────────────────────────
       fontFamily: {
-        sans:    ["DM Sans", "sans-serif"],
-        display: ["Sora", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Inter", "system-ui", "sans-serif"],
       },
-
-      // ── Spacing & Sizing ──────────────────────────────────────────
       borderRadius: {
         "2xl": "1rem",
         "3xl": "1.5rem",
         "4xl": "2rem",
       },
-
-      // ── Shadows ───────────────────────────────────────────────────
       boxShadow: {
-        card:    "0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)",
-        "card-hover": "0 10px 30px -5px rgb(0 0 0 / 0.12), 0 4px 6px -2px rgb(0 0 0 / 0.05)",
-        nav:     "0 1px 0 0 rgb(0 0 0 / 0.06)",
-        blue:    "0 4px 24px 0 rgb(37 99 235 / 0.25)",
+        card: "0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)",
+        nav: "0 1px 0 0 rgb(0 0 0 / 0.08)",
       },
-
-      // ── Animations ────────────────────────────────────────────────
       keyframes: {
         "fade-up": {
-          "0%":   { opacity: "0", transform: "translateY(16px)" },
+          "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "fade-in": {
-          "0%":   { opacity: "0" },
+          "0%": { opacity: "0" },
           "100%": { opacity: "1" },
-        },
-        shimmer: {
-          "0%":   { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "200% 0" },
         },
       },
       animation: {
-        "fade-up":   "fade-up 0.5s ease-out both",
-        "fade-in":   "fade-in 0.4s ease-out both",
-        "shimmer":   "shimmer 1.8s linear infinite",
+        "fade-up": "fade-up 0.3s ease-out both",
+        "fade-in": "fade-in 0.2s ease-out both",
       },
     },
   },

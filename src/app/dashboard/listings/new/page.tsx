@@ -171,19 +171,19 @@ export default function NewListingPage() {
       {/* ── Header ────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
         <Link href="/dashboard/listings">
-          <button className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors">
+          <button className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 hover:bg-neutral-50 transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </button>
         </Link>
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">Create New Listing</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Fill in the details of the vehicle you want to sell</p>
+          <h1 className="font-display text-xl font-bold text-neutral-900">Create New Listing</h1>
+          <p className="text-sm text-neutral-500 mt-0.5">Fill in the details of the vehicle you want to sell</p>
         </div>
       </div>
 
       {/* ── API Error ─────────────────────────────────────────────────── */}
       {apiError && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 animate-fade-in">
+        <div className="flex items-start gap-3 p-4 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-700 animate-fade-in">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           {apiError}
         </div>
@@ -290,8 +290,8 @@ export default function NewListingPage() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Fuel type */}
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 block mb-2">
-                    Fuel Type <span className="text-red-500">*</span>
+                  <label className="text-sm font-semibold text-neutral-700 block mb-2">
+                    Fuel Type <span className="text-neutral-600">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {FUEL_TYPES.map((f) => (
@@ -302,8 +302,8 @@ export default function NewListingPage() {
                         className={cn(
                           "py-2.5 rounded-xl text-xs font-semibold capitalize border transition-all",
                           form.fuel_type === f
-                            ? "bg-brand-700 text-white border-brand-700"
-                            : "bg-white text-slate-600 border-slate-200 hover:border-brand-300"
+                            ? "bg-neutral-900 text-white border-brand-700"
+                            : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300"
                         )}
                       >
                         {f}
@@ -314,8 +314,8 @@ export default function NewListingPage() {
 
                 {/* Transmission */}
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 block mb-2">
-                    Transmission <span className="text-red-500">*</span>
+                  <label className="text-sm font-semibold text-neutral-700 block mb-2">
+                    Transmission <span className="text-neutral-600">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {TRANSMISSIONS.map((t) => (
@@ -326,8 +326,8 @@ export default function NewListingPage() {
                         className={cn(
                           "py-2.5 rounded-xl text-xs font-semibold capitalize border transition-all",
                           form.transmission === t
-                            ? "bg-brand-700 text-white border-brand-700"
-                            : "bg-white text-slate-600 border-slate-200 hover:border-brand-300"
+                            ? "bg-neutral-900 text-white border-brand-700"
+                            : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300"
                         )}
                       >
                         {t}
@@ -343,9 +343,9 @@ export default function NewListingPage() {
           <div className="space-y-5">
 
             {/* Image upload */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card">
-              <h3 className="font-display font-bold text-slate-900 mb-1">Photos</h3>
-              <p className="text-xs text-slate-500 mb-4">
+            <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
+              <h3 className="font-display font-bold text-neutral-900 mb-1">Photos</h3>
+              <p className="text-xs text-neutral-500 mb-4">
                 Upload up to 10 photos. First photo will be the thumbnail.
               </p>
 
@@ -353,17 +353,17 @@ export default function NewListingPage() {
               <label className={cn(
                 "flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all",
                 imageFiles.length >= 10
-                  ? "border-slate-200 bg-slate-50 cursor-not-allowed"
-                  : "border-slate-300 hover:border-brand-400 hover:bg-brand-50"
+                  ? "border-neutral-200 bg-neutral-50 cursor-not-allowed"
+                  : "border-slate-300 hover:border-brand-400 hover:bg-neutral-50"
               )}>
-                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                  <Upload className="w-5 h-5 text-slate-400" />
+                <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center">
+                  <Upload className="w-5 h-5 text-neutral-400" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-slate-700">
+                  <p className="text-sm font-semibold text-neutral-700">
                     {imageFiles.length >= 10 ? "Maximum reached" : "Upload photos"}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-neutral-400 mt-0.5">
                     JPEG, PNG, WebP — max 5MB each
                   </p>
                 </div>
@@ -384,14 +384,14 @@ export default function NewListingPage() {
                     <div key={i} className="relative aspect-square rounded-xl overflow-hidden group">
                       <img src={src} alt="" className="w-full h-full object-cover" />
                       {i === 0 && (
-                        <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-brand-700 text-white text-[9px] font-bold rounded-md">
+                        <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-neutral-900 text-white text-[9px] font-bold rounded-md">
                           Cover
                         </div>
                       )}
                       <button
                         type="button"
                         onClick={() => removeImage(i)}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-neutral-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -399,14 +399,14 @@ export default function NewListingPage() {
                   ))}
                 </div>
               )}
-              <p className="text-xs text-slate-400 text-right mt-2">
+              <p className="text-xs text-neutral-400 text-right mt-2">
                 {imageFiles.length} / 10
               </p>
             </div>
 
             {/* Listing preview */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card">
-              <h3 className="font-display font-bold text-slate-900 mb-3 text-sm">Listing Summary</h3>
+            <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
+              <h3 className="font-display font-bold text-neutral-900 mb-3 text-sm">Listing Summary</h3>
               <div className="space-y-2 text-sm">
                 <SummaryRow label="Title"    value={form.title    || "—"} />
                 <SummaryRow label="Make"     value={form.make     || "—"} />
@@ -454,10 +454,10 @@ function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card space-y-4">
+    <div className="bg-white rounded-2xl p-6 border border-neutral-200  space-y-4">
       <div className="flex items-center gap-2 mb-2">
-        {icon && <span className="text-slate-400">{icon}</span>}
-        <h3 className="font-display font-bold text-slate-900">{title}</h3>
+        {icon && <span className="text-neutral-400">{icon}</span>}
+        <h3 className="font-display font-bold text-neutral-900">{title}</h3>
       </div>
       {children}
     </div>
@@ -468,8 +468,8 @@ function FormSection({
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-2">
-      <span className="text-slate-400 text-xs">{label}</span>
-      <span className="text-slate-900 font-medium text-xs text-right truncate max-w-[140px]">{value}</span>
+      <span className="text-neutral-400 text-xs">{label}</span>
+      <span className="text-neutral-900 font-medium text-xs text-right truncate max-w-[140px]">{value}</span>
     </div>
   );
 }

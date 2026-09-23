@@ -152,34 +152,34 @@ export default function DealerProfileForm() {
   return (
     <PageWrapper className="py-10 space-y-8">
       <div className="flex flex-col gap-3">
-        <Link href="/dashboard/profile" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800">
+        <Link href="/dashboard/profile" className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-slate-800">
           <ArrowLeft className="w-4 h-4" />
           Back to dashboard profile
         </Link>
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Seller setup</p>
-          <h1 className="font-display text-3xl text-slate-900">Dealer profile</h1>
-          <p className="text-slate-500 mt-1 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.3em] text-neutral-400">Seller setup</p>
+          <h1 className="font-display text-3xl text-neutral-900">Dealer profile</h1>
+          <p className="text-neutral-500 mt-1 max-w-2xl">
             Provide your showroom details so we can verify your business and unlock listings, analytics, and lead tools.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-500">
+        <div className="flex items-center gap-2 text-sm text-neutral-500">
           <span>Status:</span>
-          {status ? <ApprovalBadge status={status} /> : <span className="text-slate-400">Not submitted</span>}
+          {status ? <ApprovalBadge status={status} /> : <span className="text-neutral-400">Not submitted</span>}
           <span className="text-slate-300">•</span>
-          <span className="text-slate-500 font-medium">
+          <span className="text-neutral-500 font-medium">
             {mode === "create" ? "Create profile" : "Update profile"}
           </span>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">
+        <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 text-sm text-neutral-700">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-100 shadow-card p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-neutral-200  p-6 space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Input
             label="Business name"

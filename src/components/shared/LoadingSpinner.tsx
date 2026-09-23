@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
-import { Car } from "lucide-react";
+import Icon from "@/components/ui/Icon";
 
 interface LoadingSpinnerProps {
-  size?:     "sm" | "md" | "lg";
-  label?:    string;
+  size?: "sm" | "md" | "lg";
+  label?: string;
   fullPage?: boolean;
 }
 
@@ -14,21 +14,14 @@ const sizeMap = {
 };
 
 export default function LoadingSpinner({
-  size     = "md",
+  size = "md",
   label,
   fullPage = false,
 }: LoadingSpinnerProps) {
   const spinner = (
     <div className="flex flex-col items-center gap-3">
-      <div
-        className={cn(
-          "rounded-full border-slate-200 border-t-brand-600 animate-spin",
-          sizeMap[size]
-        )}
-      />
-      {label && (
-        <p className="text-sm text-slate-500 font-medium">{label}</p>
-      )}
+      <div className={cn("rounded-full border-neutral-200 border-t-neutral-900 animate-spin", sizeMap[size])} />
+      {label && <p className="text-sm text-neutral-500 font-medium">{label}</p>}
     </div>
   );
 
@@ -40,24 +33,20 @@ export default function LoadingSpinner({
     );
   }
 
-  return (
-    <div className="flex items-center justify-center py-12">
-      {spinner}
-    </div>
-  );
+  return <div className="flex items-center justify-center py-12">{spinner}</div>;
 }
 
 export function PageLoader() {
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50 gap-4">
-      <div className="w-14 h-14 rounded-2xl bg-brand-700 flex items-center justify-center animate-pulse">
-        <Car className="w-7 h-7 text-white" strokeWidth={2} />
+      <div className="w-14 h-14 rounded-xl bg-neutral-900 flex items-center justify-center">
+        <Icon name="directions_car" size={28} className="text-white" />
       </div>
       <div className="flex gap-1.5">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="w-2 h-2 rounded-full bg-brand-300 animate-bounce"
+            className="w-2 h-2 rounded-full bg-neutral-300 animate-bounce"
             style={{ animationDelay: `${i * 150}ms` }}
           />
         ))}

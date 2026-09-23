@@ -1,54 +1,50 @@
 import { cn } from "@/lib/utils";
-import { Car, Search, Heart, MessageSquare, AlertCircle } from "lucide-react";
+import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
-import { ElementType } from "react";
 
 type EmptyVariant = "listings" | "search" | "favorites" | "inquiries" | "generic";
 
 interface EmptyStateProps {
-  variant?:     EmptyVariant;
-  title?:       string;
+  variant?: EmptyVariant;
+  title?: string;
   description?: string;
   actionLabel?: string;
-  actionHref?:  string;
-  onAction?:    () => void;
-  className?:   string;
+  actionHref?: string;
+  onAction?: () => void;
+  className?: string;
 }
 
-const defaults: Record<
-  EmptyVariant,
-  { icon: ElementType; title: string; description: string }
-> = {
+const defaults: Record<EmptyVariant, { icon: React.ComponentProps<typeof Icon>["name"]; title: string; description: string }> = {
   listings: {
-    icon:        Car,
-    title:       "No listings found",
+    icon: "directions_car",
+    title: "No listings found",
     description: "Try adjusting your filters or search for something different.",
   },
   search: {
-    icon:        Search,
-    title:       "No results found",
-    description: "We couldn't find any cars matching your search. Try different keywords.",
+    icon: "search",
+    title: "No results found",
+    description: "We could not find any cars matching your search. Try different keywords.",
   },
   favorites: {
-    icon:        Heart,
-    title:       "No saved cars",
-    description: "Cars you save will appear here. Start browsing to find your perfect car.",
+    icon: "favorite",
+    title: "No saved cars",
+    description: "Cars you save will appear here. Start browsing to find your car.",
   },
   inquiries: {
-    icon:        MessageSquare,
-    title:       "No inquiries yet",
+    icon: "chat_bubble",
+    title: "No messages yet",
     description: "When buyers contact you, their messages will appear here.",
   },
   generic: {
-    icon:        AlertCircle,
-    title:       "Nothing here yet",
-    description: "There's nothing to show at the moment.",
+    icon: "info",
+    title: "Nothing here yet",
+    description: "There is nothing to show at the moment.",
   },
 };
 
 export default function EmptyState({
-  variant     = "generic",
+  variant = "generic",
   title,
   description,
   actionLabel,
@@ -57,27 +53,19 @@ export default function EmptyState({
   className,
 }: EmptyStateProps) {
   const config = defaults[variant];
-  const Icon   = config.icon;
 
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center text-center py-16 px-6",
-        className
-      )}
-    >
-      <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-        <Icon className="w-8 h-8 text-slate-400" strokeWidth={1.5} />
+    <div className={cn("flex flex-col items-center justify-center text-center py-16 px-6", className)}>
+      <div className="w-14 h-14 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center mb-4">
+        <Icon name={config.icon} size={24} className="text-neutral-400" />
       </div>
-      <h3 className="text-base font-semibold text-slate-900 mb-2">
-        {title ?? config.title}
-      </h3>
-      <p className="text-sm text-slate-500 max-w-sm leading-relaxed">
-        {description ?? config.description}
-      </p>
+      <h3 className="text-sm font-semibold text-neutral-900 mb-1">{title ?? config.title}</h3>
+      <p className="text-xs text-neutral-500 max-w-sm leading-relaxed">{description ?? config.description}</p>
       {actionLabel && actionHref && (
         <Link href={actionHref} className="mt-6">
-          <Button variant="primary" size="sm">{actionLabel}</Button>
+          <Button variant="primary" size="sm">
+            {actionLabel}
+          </Button>
         </Link>
       )}
       {actionLabel && onAction && (

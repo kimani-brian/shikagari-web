@@ -2,7 +2,6 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { SlidersHorizontal, Grid3X3, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ListingFilters } from "@/types";
 import { useListings } from "@/hooks/useListings";
@@ -13,6 +12,7 @@ import SearchBar from "@/components/search/SearchBar";
 import Pagination from "@/components/ui/Pagination";
 import Button from "@/components/ui/Button";
 import PageWrapper from "@/components/layout/PageWrapper";
+import Icon from "@/components/ui/Icon";
 import { CarGridSkeleton } from "@/components/ui/Skeleton";
 
 function parseFiltersFromURL(params: URLSearchParams): ListingFilters {
@@ -78,11 +78,10 @@ function ListingsPageInner() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-surface-muted">
+    <div className="min-h-screen bg-white">
 
-      {/* Sticky search bar */}
-      <div className="bg-white border-b border-slate-100 sticky top-[var(--nav-height)] z-30">
-        <PageWrapper className="py-4">
+      <div className="bg-white border-b border-neutral-200 sticky top-[var(--nav-height)] z-30">
+        <PageWrapper className="py-3">
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <SearchBar
@@ -94,21 +93,21 @@ function ListingsPageInner() {
             <Button
               variant="secondary"
               size="sm"
-              leftIcon={<SlidersHorizontal className="w-4 h-4" />}
+              leftIcon={<Icon name="tune" size={18} />}
               onClick={() => setMobileFilterOpen(true)}
               className="lg:hidden shrink-0 relative"
             >
               Filters
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-brand-700 text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-neutral-900 text-white text-[9px] font-medium flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
             </Button>
 
-            <div className="hidden sm:flex items-center border border-slate-200 rounded-xl overflow-hidden">
-              <ViewToggleBtn active={viewMode === "grid"} onClick={() => setViewMode("grid")} icon={<Grid3X3 className="w-4 h-4" />} />
-              <ViewToggleBtn active={viewMode === "list"} onClick={() => setViewMode("list")} icon={<List className="w-4 h-4" />} />
+            <div className="hidden sm:flex items-center border border-neutral-200 rounded-full overflow-hidden">
+              <ViewToggleBtn active={viewMode === "grid"} onClick={() => setViewMode("grid")} icon={<Icon name="grid_view" size={18} />} />
+              <ViewToggleBtn active={viewMode === "list"} onClick={() => setViewMode("list")} icon={<Icon name="view_list" size={18} />} />
             </div>
           </div>
         </PageWrapper>
@@ -127,19 +126,18 @@ function ListingsPageInner() {
 
           <div className="flex-1 min-w-0">
 
-            {/* Results bar */}
             <div className="flex items-center justify-between mb-5">
               <div>
                 {!loading && (
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-neutral-600">
                     {meta?.total_items !== undefined ? (
                       <>
-                        <span className="font-bold text-slate-900">
+                        <span className="font-semibold text-neutral-900">
                           {meta.total_items.toLocaleString()}
                         </span>{" "}
                         {meta.total_items === 1 ? "car" : "cars"} found
                         {filters.location && (
-                          <span className="text-slate-400"> in {filters.location}</span>
+                          <span className="text-neutral-400"> in {filters.location}</span>
                         )}
                       </>
                     ) : "Searching..."}
@@ -150,17 +148,16 @@ function ListingsPageInner() {
                 <select
                   value={filters.sort_by ?? "newest"}
                   onChange={(e) => setFilters((prev) => ({ ...prev, sort_by: e.target.value, page: 1 }))}
-                  className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none"
+                  className="text-xs border border-neutral-200 rounded-full px-3 py-1.5 bg-white text-neutral-700 focus:outline-none"
                 >
                   <option value="newest">Newest</option>
-                  <option value="price_asc">Price ↑</option>
-                  <option value="price_desc">Price ↓</option>
-                  <option value="year_desc">Year ↓</option>
+                  <option value="price_asc">Price low to high</option>
+                  <option value="price_desc">Price high to low</option>
+                  <option value="year_desc">Year newest</option>
                 </select>
               </div>
             </div>
 
-            {/* Active filter pills */}
             {activeFilterCount > 0 && (
               <div className="flex flex-wrap gap-2 mb-5">
                 {filters.search      && <FilterPill label={`"${filters.search}"`}            onRemove={() => setFilters((p) => ({ ...p, search: undefined,       page: 1 }))} />}
@@ -171,19 +168,19 @@ function ListingsPageInner() {
                 {filters.seller_type  && <FilterPill label={`${filters.seller_type} seller`}  onRemove={() => setFilters((p) => ({ ...p, seller_type: undefined,  page: 1 }))} />}
                 {(filters.min_price || filters.max_price) && (
                   <FilterPill
-                    label={`KES ${filters.min_price?.toLocaleString() ?? "0"} – ${filters.max_price?.toLocaleString() ?? "any"}`}
+                    label={`KES ${filters.min_price?.toLocaleString() ?? "0"} to ${filters.max_price?.toLocaleString() ?? "any"}`}
                     onRemove={() => setFilters((p) => ({ ...p, min_price: undefined, max_price: undefined, page: 1 }))}
                   />
                 )}
                 {(filters.min_year || filters.max_year) && (
                   <FilterPill
-                    label={`${filters.min_year ?? "any"} – ${filters.max_year ?? "any"}`}
+                    label={`${filters.min_year ?? "any"} to ${filters.max_year ?? "any"}`}
                     onRemove={() => setFilters((p) => ({ ...p, min_year: undefined, max_year: undefined, page: 1 }))}
                   />
                 )}
                 <button
                   onClick={() => setFilters({ page: 1, per_page: 20, sort_by: "newest" })}
-                  className="text-xs font-semibold text-red-500 hover:text-red-700 px-2 py-1 hover:bg-red-50 rounded-lg transition-colors"
+                  className="text-xs font-medium text-neutral-600 hover:text-neutral-900 px-2 py-1 rounded-full hover:bg-neutral-100 transition-colors"
                 >
                   Clear all
                 </button>
@@ -191,7 +188,7 @@ function ListingsPageInner() {
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 mb-5 text-sm">
+              <div className="bg-neutral-50 border border-neutral-200 text-neutral-700 rounded-xl p-4 mb-5 text-sm">
                 {error}
               </div>
             )}
@@ -203,28 +200,26 @@ function ListingsPageInner() {
                 emptyVariant={activeFilterCount > 0 ? "search" : "listings"}
               />
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {loading
                   ? Array.from({ length: 6 }).map((_, i) => <ListCardSkeleton key={i} />)
                   : listings.length === 0
-                  ? <div className="bg-white rounded-2xl border border-slate-100 p-16 text-center"><p className="text-slate-400 text-sm">No listings found</p></div>
-                  : listings.map((listing, i) => (
-                      <div key={listing.id} className="animate-fade-up" style={{ animationDelay: `${i * 40}ms` }}>
-                        <CarCard listing={listing} />
-                      </div>
+                  ? <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center"><p className="text-neutral-500 text-sm">No listings found</p></div>
+                  : listings.map((listing) => (
+                      <CarCard key={listing.id} listing={listing} />
                     ))
                 }
               </div>
             )}
 
             {meta && meta.total_pages > 1 && (
-              <div className="mt-10">
+              <div className="mt-8">
                 <Pagination
                   page={meta.page}
                   totalPages={meta.total_pages}
                   onPageChange={handlePageChange}
                 />
-                <p className="text-center text-xs text-slate-400 mt-3">
+                <p className="text-center text-xs text-neutral-400 mt-3">
                   Page {meta.page} of {meta.total_pages} — {meta.total_items.toLocaleString()} total
                 </p>
               </div>
@@ -236,12 +231,11 @@ function ListingsPageInner() {
   );
 }
 
-// ── Active filter pill ─────────────────────────────────────────────────────────
 function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-200 text-xs font-semibold">
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-medium">
       {label}
-      <button onClick={onRemove} className="hover:text-brand-900 transition-colors ml-0.5">×</button>
+      <button onClick={onRemove} className="hover:text-neutral-300 transition-colors ml-0.5">×</button>
     </span>
   );
 }
@@ -250,7 +244,7 @@ function ViewToggleBtn({ active, onClick, icon }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className={cn("p-2 transition-colors", active ? "bg-brand-700 text-white" : "bg-white text-slate-400 hover:text-slate-600")}
+      className={cn("p-2 transition-colors", active ? "bg-neutral-900 text-white" : "bg-white text-neutral-400 hover:text-neutral-600")}
     >
       {icon}
     </button>
@@ -259,14 +253,14 @@ function ViewToggleBtn({ active, onClick, icon }: { active: boolean; onClick: ()
 
 function ListCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-4 flex gap-4 animate-pulse">
-      <div className="w-40 h-28 rounded-xl bg-slate-200 shrink-0" />
+    <div className="bg-white rounded-xl border border-neutral-200 p-4 flex gap-4 animate-pulse">
+      <div className="w-40 h-28 rounded-xl bg-neutral-100 shrink-0" />
       <div className="flex-1 space-y-2 py-1">
-        <div className="h-4 bg-slate-200 rounded w-3/4" />
-        <div className="h-5 bg-slate-200 rounded w-1/3" />
+        <div className="h-4 bg-neutral-100 rounded w-3/4" />
+        <div className="h-5 bg-neutral-100 rounded w-1/3" />
         <div className="flex gap-2 mt-2">
-          <div className="h-5 w-16 bg-slate-200 rounded-md" />
-          <div className="h-5 w-16 bg-slate-200 rounded-md" />
+          <div className="h-5 w-16 bg-neutral-100 rounded-full" />
+          <div className="h-5 w-16 bg-neutral-100 rounded-full" />
         </div>
       </div>
     </div>
@@ -276,7 +270,7 @@ function ListCardSkeleton() {
 export default function ListingsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-surface-muted py-10">
+      <div className="min-h-screen bg-white py-10">
         <div className="mx-auto max-w-7xl px-4">
           <CarGridSkeleton count={8} />
         </div>

@@ -75,7 +75,7 @@ export default function EditListingPage() {
   if (!listing) {
     return (
       <div className="text-center py-16">
-        <p className="text-slate-500">Listing not found.</p>
+        <p className="text-neutral-500">Listing not found.</p>
         <Link href="/dashboard/listings">
           <Button variant="primary" size="sm" className="mt-4">Back to listings</Button>
         </Link>
@@ -134,20 +134,20 @@ export default function EditListingPage() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/dashboard/listings">
-          <button className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors">
+          <button className="w-9 h-9 rounded-xl bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 hover:bg-neutral-50 transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </button>
         </Link>
         <div className="flex-1">
-          <h1 className="font-display text-xl font-bold text-slate-900">Edit Listing</h1>
-          <p className="text-sm text-slate-500 mt-0.5 truncate">{listing.title}</p>
+          <h1 className="font-display text-xl font-bold text-neutral-900">Edit Listing</h1>
+          <p className="text-sm text-neutral-500 mt-0.5 truncate">{listing.title}</p>
         </div>
         <ListingStatusBadge status={status} />
       </div>
 
       {/* API error */}
       {apiError && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 animate-fade-in">
+        <div className="flex items-start gap-3 p-4 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-700 animate-fade-in">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           {apiError}
         </div>
@@ -160,9 +160,9 @@ export default function EditListingPage() {
           <div className="lg:col-span-2 space-y-5">
 
             {/* Basic info */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card space-y-4">
-              <h3 className="font-display font-bold text-slate-900 flex items-center gap-2">
-                <Car className="w-4 h-4 text-slate-400" />
+            <div className="bg-white rounded-2xl p-6 border border-neutral-200  space-y-4">
+              <h3 className="font-display font-bold text-neutral-900 flex items-center gap-2">
+                <Car className="w-4 h-4 text-neutral-400" />
                 Basic Information
               </h3>
               <Input
@@ -200,8 +200,8 @@ export default function EditListingPage() {
             </div>
 
             {/* Specs */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card space-y-4">
-              <h3 className="font-display font-bold text-slate-900">Vehicle Specifications</h3>
+            <div className="bg-white rounded-2xl p-6 border border-neutral-200  space-y-4">
+              <h3 className="font-display font-bold text-neutral-900">Vehicle Specifications</h3>
               <div className="grid grid-cols-2 gap-4">
                 <SelectField
                   label="Make"
@@ -242,7 +242,7 @@ export default function EditListingPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 block mb-2">Fuel Type</label>
+                  <label className="text-sm font-semibold text-neutral-700 block mb-2">Fuel Type</label>
                   <div className="grid grid-cols-2 gap-2">
                     {FUEL_TYPES.map((f) => (
                       <button
@@ -250,8 +250,8 @@ export default function EditListingPage() {
                         className={cn(
                           "py-2 rounded-xl text-xs font-semibold capitalize border transition-all",
                           fuelType === f
-                            ? "bg-brand-700 text-white border-brand-700"
-                            : "bg-white text-slate-600 border-slate-200 hover:border-brand-300"
+                            ? "bg-neutral-900 text-white border-brand-700"
+                            : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300"
                         )}
                       >
                         {f}
@@ -260,7 +260,7 @@ export default function EditListingPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 block mb-2">Transmission</label>
+                  <label className="text-sm font-semibold text-neutral-700 block mb-2">Transmission</label>
                   <div className="grid grid-cols-2 gap-2">
                     {TRANSMISSIONS.map((t) => (
                       <button
@@ -268,8 +268,8 @@ export default function EditListingPage() {
                         className={cn(
                           "py-2 rounded-xl text-xs font-semibold capitalize border transition-all",
                           transmission === t
-                            ? "bg-brand-700 text-white border-brand-700"
-                            : "bg-white text-slate-600 border-slate-200 hover:border-brand-300"
+                            ? "bg-neutral-900 text-white border-brand-700"
+                            : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300"
                         )}
                       >
                         {t}
@@ -285,8 +285,8 @@ export default function EditListingPage() {
           <div className="space-y-5">
 
             {/* Status */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card">
-              <h3 className="font-display font-bold text-slate-900 mb-3">Listing Status</h3>
+            <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
+              <h3 className="font-display font-bold text-neutral-900 mb-3">Listing Status</h3>
               <div className="space-y-2">
                 {STATUSES.map((s) => (
                   <button
@@ -294,31 +294,31 @@ export default function EditListingPage() {
                     className={cn(
                       "w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium capitalize transition-all",
                       status === s
-                        ? "border-brand-600 bg-brand-50 text-brand-700"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                        ? "border-neutral-900 bg-neutral-50 text-neutral-900"
+                        : "border-neutral-200 bg-white text-neutral-600 hover:border-slate-300"
                     )}
                   >
                     <span>{s}</span>
                     {status === s && (
-                      <span className="w-2 h-2 rounded-full bg-brand-600" />
+                      <span className="w-2 h-2 rounded-full bg-neutral-900" />
                     )}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-slate-400 mt-3">
+              <p className="text-xs text-neutral-400 mt-3">
                 Set to "inactive" to hide from public listings without deleting.
               </p>
             </div>
 
             {/* Current images */}
             {listing.images && listing.images.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card">
-                <h3 className="font-display font-bold text-slate-900 mb-3 text-sm">
+              <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
+                <h3 className="font-display font-bold text-neutral-900 mb-3 text-sm">
                   Current Photos ({listing.images.length})
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
                   {listing.images.slice(0, 6).map((img, i) => (
-                    <div key={i} className="aspect-square rounded-xl overflow-hidden bg-slate-100">
+                    <div key={i} className="aspect-square rounded-xl overflow-hidden bg-neutral-100">
                       <img
                         src={img.startsWith("http") ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "")}${img}`}
                         alt={`Image ${i + 1}`}
@@ -327,7 +327,7 @@ export default function EditListingPage() {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-slate-400 mt-2">
+                <p className="text-xs text-neutral-400 mt-2">
                   To update photos, delete and re-create the listing.
                 </p>
               </div>

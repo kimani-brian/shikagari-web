@@ -3,31 +3,31 @@
 import { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import Icon from "@/components/ui/Icon";
 
 const variants = {
   primary:
-    "bg-brand-700 text-white hover:bg-brand-800 shadow-blue hover:shadow-lg active:scale-[0.98]",
+    "bg-neutral-900 text-white hover:bg-black border border-neutral-900",
   secondary:
-    "bg-white text-slate-800 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98]",
+    "bg-white text-neutral-900 border border-neutral-300 hover:bg-neutral-50",
   outline:
-    "bg-transparent text-brand-700 border border-brand-300 hover:bg-brand-50 active:scale-[0.98]",
+    "bg-transparent text-neutral-900 border border-neutral-300 hover:bg-neutral-50",
   ghost:
-    "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+    "bg-transparent text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
   danger:
-    "bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]",
+    "bg-neutral-900 text-white hover:bg-black border border-neutral-900",
   "danger-ghost":
-    "bg-transparent text-red-600 hover:bg-red-50",
+    "bg-transparent text-neutral-700 hover:bg-neutral-100 border border-transparent",
   navy:
-    "bg-navy text-white hover:bg-navy-light active:scale-[0.98]",
+    "bg-neutral-900 text-white hover:bg-black border border-neutral-900",
 };
 
 const sizes = {
-  xs:  "h-7  px-3   text-xs  rounded-lg  gap-1.5",
-  sm:  "h-9  px-4   text-sm  rounded-xl  gap-2",
-  md:  "h-11 px-5   text-sm  rounded-xl  gap-2",
-  lg:  "h-12 px-6   text-base rounded-xl gap-2.5",
-  xl:  "h-14 px-8   text-base rounded-2xl gap-3",
+  xs:  "h-7  px-3   text-xs  rounded-full  gap-1.5",
+  sm:  "h-9  px-4   text-sm  rounded-full  gap-2",
+  md:  "h-10 px-5   text-sm  rounded-full  gap-2",
+  lg:  "h-11 px-6   text-sm  rounded-full gap-2",
+  xl:  "h-12 px-7   text-sm  rounded-full gap-2",
 };
 
 export interface ButtonProps
@@ -65,9 +65,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex items-center justify-center font-semibold",
-          "transition-all duration-200 ease-out",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2",
+          "inline-flex items-center justify-center font-medium",
+          "transition-colors duration-150 ease-out",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-1",
           "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
           "select-none whitespace-nowrap",
           variants[variant],
@@ -78,14 +78,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading && (
-          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin shrink-0" />
         )}
         {!loading && leftIcon && (
-          <span className="shrink-0">{leftIcon}</span>
+          <span className="shrink-0 flex items-center">{leftIcon}</span>
         )}
         {children}
         {!loading && rightIcon && (
-          <span className="shrink-0">{rightIcon}</span>
+          <span className="shrink-0 flex items-center">{rightIcon}</span>
         )}
       </Comp>
     );

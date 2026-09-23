@@ -4,13 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useMyListings } from "@/hooks/useListings";
 import { formatKES, timeAgo } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import {
   PlusCircle, Edit3, Trash2, Eye,
-  Car, Search, Filter
+  Search
 } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { ListingStatusBadge } from "@/components/ui/Badge";
 import Pagination from "@/components/ui/Pagination";
 import EmptyState from "@/components/shared/EmptyState";
 import api from "@/lib/api";
@@ -20,17 +18,14 @@ import { ListingCard } from "@/types";
 export default function MyListingsPage() {
   const [page,          setPage]          = useState(1);
   const [search,        setSearch]        = useState("");
-  const [statusFilter,  setStatusFilter]  = useState("all");
   const [deletingId,    setDeletingId]    = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const { listings, meta, loading, refetch } = useMyListings(page, 20);
 
-  // Client-side filter (search + status)
   const filtered = listings.filter((l) => {
     const matchSearch = !search || l.title.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || l.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch;
   });
 
   const handleDelete = async (id: string) => {
@@ -53,8 +48,8 @@ export default function MyListingsPage() {
       {/* ── Header ────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">My Listings</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <h1 className="font-display text-xl font-bold text-neutral-900">My Listings</h1>
+          <p className="text-sm text-neutral-500 mt-0.5">
             {meta?.total_items ?? 0} total listings
           </p>
         </div>
@@ -66,42 +61,26 @@ export default function MyListingsPage() {
       </div>
 
       {/* ── Filters bar ───────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-card p-4">
+      <div className="bg-white rounded-2xl border border-neutral-200  p-4">
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
-          <div className="flex items-center gap-2 flex-1 border border-slate-200 rounded-xl px-3 py-2.5">
-            <Search className="w-4 h-4 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-2 flex-1 border border-neutral-200 rounded-xl px-3 py-2.5">
+            <Search className="w-4 h-4 text-neutral-400 shrink-0" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search your listings..."
-              className="flex-1 text-sm text-slate-900 placeholder:text-slate-400 outline-none bg-transparent"
+              className="flex-1 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none bg-transparent"
             />
           </div>
 
-          {/* Status filter */}
-          <div className="flex gap-2">
-            {["all", "active", "inactive", "sold"].map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={cn(
-                  "px-3 py-2 rounded-xl text-xs font-semibold transition-all capitalize border",
-                  statusFilter === s
-                    ? "bg-brand-700 text-white border-brand-700"
-                    : "bg-white text-slate-600 border-slate-200 hover:border-brand-300"
-                )}
-              >
-                {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
-              </button>
-            ))}
-          </div>
+
         </div>
       </div>
 
       {/* ── Listings table ────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+      <div className="bg-white rounded-2xl border border-neutral-200  overflow-hidden">
         {loading ? (
           <div className="divide-y divide-slate-50">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -130,7 +109,7 @@ export default function MyListingsPage() {
         ) : (
           <div className="divide-y divide-slate-50">
             {/* Table header — desktop */}
-            <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 bg-neutral-50 text-xs font-bold text-neutral-500 uppercase tracking-wider">
               <span>Vehicle</span>
               <span>Price</span>
               <span>Status</span>
@@ -167,8 +146,8 @@ export default function MyListingsPage() {
             <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-600" />
             </div>
-            <h3 className="font-display font-bold text-slate-900 text-center mb-2">Delete listing?</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <h3 className="font-display font-bold text-neutral-900 text-center mb-2">Delete listing?</h3>
+            <p className="text-sm text-neutral-500 text-center mb-6">
               This action cannot be undone. The listing will be permanently removed.
             </p>
             <div className="flex gap-3">
@@ -202,10 +181,10 @@ function ListingRow({
   onDeleteClick: () => void;
 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center px-5 py-4 hover:bg-slate-50 transition-colors">
+    <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center px-5 py-4 hover:bg-neutral-50 transition-colors">
       {/* Vehicle info */}
       <div className="flex items-center gap-4">
-        <div className="w-20 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0">
+        <div className="w-20 h-16 rounded-xl bg-neutral-100 overflow-hidden shrink-0">
           {listing.thumbnail_url ? (
             <img
               src={listing.thumbnail_url.startsWith("http")
@@ -216,35 +195,30 @@ function ListingRow({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-2xl">🚗</div>
+            <div className="w-full h-full flex items-center justify-center text-2xl"></div>
           )}
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-slate-900 text-sm truncate">{listing.title}</p>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="font-semibold text-neutral-900 text-sm truncate">{listing.title}</p>
+          <p className="text-xs text-neutral-400 mt-0.5">
             {listing.year} · {listing.make} {listing.model} · {listing.location}
           </p>
-          {/* Mobile-only fields */}
           <div className="flex items-center gap-3 mt-1.5 md:hidden">
-            <span className="text-sm font-bold text-brand-700">{formatKES(listing.price_kes)}</span>
-            <ListingStatusBadge status={listing.status} />
+            <span className="text-sm font-bold text-neutral-900">{formatKES(listing.price_kes)}</span>
           </div>
         </div>
       </div>
 
       {/* Price — desktop */}
       <div className="hidden md:block">
-        <p className="font-bold text-brand-700 text-sm">{formatKES(listing.price_kes)}</p>
+        <p className="font-bold text-neutral-900 text-sm">{formatKES(listing.price_kes)}</p>
       </div>
 
-      {/* Status — desktop */}
-      <div className="hidden md:block">
-        <ListingStatusBadge status={listing.status} />
-      </div>
+
 
       {/* Date — desktop */}
       <div className="hidden md:block">
-        <p className="text-xs text-slate-500">{timeAgo(listing.created_at)}</p>
+        <p className="text-xs text-neutral-500">{timeAgo(listing.created_at)}</p>
       </div>
 
       {/* Actions */}
@@ -252,14 +226,14 @@ function ListingRow({
         <Link
           href={`/listings/${listing.id}`}
           target="_blank"
-          className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
+          className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-slate-200 transition-colors"
           title="View listing"
         >
           <Eye className="w-4 h-4" />
         </Link>
         <Link
           href={`/dashboard/listings/${listing.id}/edit`}
-          className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 hover:bg-brand-100 transition-colors"
+          className="w-8 h-8 rounded-lg bg-neutral-50 flex items-center justify-center text-neutral-700 hover:bg-neutral-100 transition-colors"
           title="Edit listing"
         >
           <Edit3 className="w-4 h-4" />
@@ -267,7 +241,7 @@ function ListingRow({
         <button
           onClick={onDeleteClick}
           disabled={isDeleting}
-          className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-500 hover:bg-red-100 transition-colors disabled:opacity-50"
+          className="w-8 h-8 rounded-lg bg-neutral-50 flex items-center justify-center text-neutral-600 hover:bg-red-100 transition-colors disabled:opacity-50"
           title="Delete listing"
         >
           <Trash2 className="w-4 h-4" />

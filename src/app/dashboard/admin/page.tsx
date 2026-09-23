@@ -76,15 +76,15 @@ export default function AdminApprovalsPage() {
 
   return (
     <div className="space-y-8">
-      <header className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <header className="bg-white rounded-2xl border border-neutral-200  p-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admin tools</p>
-          <h1 className="font-display text-3xl text-slate-900 mt-1">Seller approvals</h1>
-          <p className="text-sm text-slate-500 mt-2 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.3em] text-neutral-400">Admin tools</p>
+          <h1 className="font-display text-3xl text-neutral-900 mt-1">Seller approvals</h1>
+          <p className="text-sm text-neutral-500 mt-2 max-w-2xl">
             Review pending dealer and private seller profiles. Approving a profile allows the seller to list cars and earn the verified badge.
           </p>
         </div>
-        <Link href="/dealers" className="text-sm font-semibold text-brand-700 hover:text-brand-800">
+        <Link href="/dealers" className="text-sm font-semibold text-neutral-900 hover:text-brand-800">
           View public dealer page →
         </Link>
       </header>
@@ -105,7 +105,7 @@ export default function AdminApprovalsPage() {
               key={profile.id}
               primary={profile.business_name}
               secondary={`${profile.user.full_name} · ${profile.location}`}
-              email={profile.user.email}
+              email={profile.user.phone}
               status={profile.approval_status}
               onApprove={() => handleReview("dealer", profile.id, "approved")}
               onReject={() => handleReview("dealer", profile.id, "rejected")}
@@ -130,7 +130,7 @@ export default function AdminApprovalsPage() {
               key={profile.id}
               primary={profile.user.full_name}
               secondary={`${profile.location} · National ID ${profile.national_id_no}`}
-              email={profile.user.email}
+              email={profile.user.phone}
               status={profile.approval_status}
               onApprove={() => handleReview("seller", profile.id, "approved")}
               onReject={() => handleReview("seller", profile.id, "rejected")}
@@ -168,22 +168,22 @@ function ApprovalPanel({
   children,
 }: ApprovalPanelProps) {
   return (
-    <section className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 flex flex-col gap-4">
+    <section className="bg-white rounded-2xl border border-neutral-200  p-6 flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">
             {icon}
             Reviews
           </p>
-          <h2 className="font-display text-2xl text-slate-900">{title}</h2>
-          <p className="text-sm text-slate-500">{description}</p>
+          <h2 className="font-display text-2xl text-neutral-900">{title}</h2>
+          <p className="text-sm text-neutral-500">{description}</p>
         </div>
-        <label className="text-xs font-semibold text-slate-500 flex flex-col gap-1">
+        <label className="text-xs font-semibold text-neutral-500 flex flex-col gap-1">
           Status filter
           <select
             value={status}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+            className="rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-700 focus:border-neutral-900 focus:ring-2 focus:ring-brand-500/20"
           >
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -195,17 +195,17 @@ function ApprovalPanel({
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">{error}</div>
+        <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 text-sm text-neutral-700">{error}</div>
       )}
 
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 rounded-2xl bg-slate-100 animate-pulse" />
+            <div key={i} className="h-20 rounded-2xl bg-neutral-100 animate-pulse" />
           ))}
         </div>
       ) : React.Children.count(children) === 0 ? (
-        <div className="text-sm text-slate-500 border border-dashed border-slate-200 rounded-2xl p-6 text-center">
+        <div className="text-sm text-neutral-500 border border-dashed border-neutral-200 rounded-2xl p-6 text-center">
           {emptyMessage}
         </div>
       ) : (
@@ -243,11 +243,11 @@ function ProfileRow({
   const rejecting = loadingKey === `${rowKey}-rejected`;
 
   return (
-    <div className="flex flex-col gap-3 border border-slate-100 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-3 border border-neutral-200 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
       <div>
-        <p className="font-semibold text-slate-900">{primary}</p>
-        <p className="text-sm text-slate-500">{secondary}</p>
-        <p className="text-xs text-slate-400 mt-1">{email}</p>
+        <p className="font-semibold text-neutral-900">{primary}</p>
+        <p className="text-sm text-neutral-500">{secondary}</p>
+        <p className="text-xs text-neutral-400 mt-1">{email}</p>
       </div>
       <div className="flex items-center gap-2 flex-wrap">
         <ApprovalBadge status={status as ApprovalStatus} />

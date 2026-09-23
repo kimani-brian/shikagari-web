@@ -21,8 +21,8 @@ const BASE_NAV_ITEMS = [
 
 const ADMIN_NAV_ITEMS = [
   ...BASE_NAV_ITEMS,
-  { label: "Admin Console",    href: "/dashboard/admin",           icon: ShieldCheck },
-  { label: "Verified Sellers", href: "/dashboard/admin/verified",   icon: UserCheck   },
+  { label: "Admin",    href: "/dashboard/admin",           icon: ShieldCheck },
+  { label: "Sellers", href: "/dashboard/admin/verified",   icon: UserCheck   },
 ];
 
 export default function DashboardLayout({
@@ -52,7 +52,7 @@ export default function DashboardLayout({
       : pathname.startsWith(href);
 
   return (
-    <div className="min-h-screen bg-surface-muted">
+    <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex gap-6">
 
@@ -60,32 +60,27 @@ export default function DashboardLayout({
           <aside className="hidden lg:flex flex-col w-60 xl:w-64 shrink-0">
 
             {/* User card */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card mb-4">
+            <div className="bg-white rounded-2xl p-5 border border-neutral-200  mb-4">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-xl bg-brand-700 flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-neutral-900 flex items-center justify-center shrink-0">
                   <span className="font-display font-bold text-white text-base">
                     {user?.full_name?.[0]?.toUpperCase()}
                   </span>
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-slate-900 text-sm truncate">
+                  <p className="font-semibold text-neutral-900 text-sm truncate">
                     {user?.full_name}
                   </p>
-                  <p className="text-xs text-slate-400 capitalize truncate">
+                  <p className="text-xs text-neutral-400 capitalize truncate">
                     {user?.role}
                   </p>
                 </div>
               </div>
-              {isSeller && user?.is_verified && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 rounded-xl">
-                  <ShieldCheck className="w-3.5 h-3.5 text-brand-600" />
-                  <span className="text-xs font-semibold text-brand-700">Verified Seller</span>
-                </div>
-              )}
+
             </div>
 
             {/* Navigation */}
-            <nav className="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+            <nav className="bg-white rounded-2xl border border-neutral-200  overflow-hidden">
               {navItems.map((item) => {
                 const Icon   = item.icon;
                 const active = isActive(item.href);
@@ -97,13 +92,13 @@ export default function DashboardLayout({
                       "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors",
                       "border-b border-slate-50 last:border-0",
                       active
-                        ? "bg-brand-50 text-brand-700"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        ? "bg-neutral-50 text-neutral-900"
+                        : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
                     )}
                   >
-                    <Icon className={cn("w-4 h-4 shrink-0", active ? "text-brand-600" : "text-slate-400")} />
+                    <Icon className={cn("w-4 h-4 shrink-0", active ? "text-neutral-700" : "text-neutral-400")} />
                     {item.label}
-                    {active && <ChevronRight className="w-3.5 h-3.5 ml-auto text-brand-400" />}
+                    {active && <ChevronRight className="w-3.5 h-3.5 ml-auto text-neutral-400" />}
                   </Link>
                 );
               })}
@@ -111,7 +106,7 @@ export default function DashboardLayout({
               {/* Sign out */}
               <button
                 onClick={() => { logout(); router.push("/"); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors border-t border-slate-100"
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors border-t border-neutral-200"
               >
                 <LogOut className="w-4 h-4 shrink-0" />
                 Sign out
@@ -133,8 +128,8 @@ export default function DashboardLayout({
                     className={cn(
                       "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all shrink-0 border",
                       active
-                        ? "bg-brand-700 text-white border-brand-700"
-                        : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                        ? "bg-neutral-900 text-white border-brand-700"
+                        : "bg-white text-neutral-600 border-neutral-200 hover:border-slate-300"
                     )}
                   >
                     <Icon className="w-4 h-4" />

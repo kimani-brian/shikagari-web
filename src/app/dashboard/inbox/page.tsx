@@ -74,12 +74,12 @@ export default function InboxPage() {
 
       {/* Header */}
       <div>
-        <h1 className="font-display text-xl font-bold text-slate-900">Messages</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Buyer inquiries about your listings</p>
+        <h1 className="font-display text-xl font-bold text-neutral-900">Messages</h1>
+        <p className="text-sm text-neutral-500 mt-0.5">Buyer inquiries about your listings</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 bg-white rounded-xl p-1 border border-slate-100 shadow-card w-fit">
+      <div className="flex gap-2 bg-white rounded-xl p-1 border border-neutral-200  w-fit">
         {(["inbox", "sent"] as const).map((t) => (
           <button
             key={t}
@@ -87,8 +87,8 @@ export default function InboxPage() {
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all",
               tab === t
-                ? "bg-brand-700 text-white"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-neutral-900 text-white"
+                : "text-neutral-600 hover:text-neutral-900"
             )}
           >
             {t === "inbox" ? "Received" : "Sent"}
@@ -99,7 +99,7 @@ export default function InboxPage() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-2xl p-5 border border-slate-100 animate-pulse">
+            <div key={i} className="bg-white rounded-2xl p-5 border border-neutral-200 animate-pulse">
               <div className="flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
                 <div className="flex-1 space-y-2">
@@ -118,41 +118,41 @@ export default function InboxPage() {
             <div
               key={inq.id}
               className={cn(
-                "bg-white rounded-2xl border border-slate-100 shadow-card p-5",
-                "hover:border-brand-200 transition-all cursor-pointer",
-                selected?.id === inq.id && "border-brand-300 ring-1 ring-brand-200"
+                "bg-white rounded-2xl border border-neutral-200  p-5",
+                "hover:border-neutral-200 transition-all cursor-pointer",
+                selected?.id === inq.id && "border-neutral-300 ring-1 ring-brand-200"
               )}
               onClick={() => { setSelected(inq); setReply(""); }}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center shrink-0">
-                    <span className="font-bold text-brand-700 text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center shrink-0">
+                    <span className="font-bold text-neutral-900 text-sm">
                       {(tab === "inbox" ? inq.buyer : inq.seller)?.full_name?.[0]?.toUpperCase()}
                     </span>
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-slate-900 text-sm">
+                      <p className="font-semibold text-neutral-900 text-sm">
                         {tab === "inbox" ? inq.buyer?.full_name : inq.seller?.full_name}
                       </p>
                       <Badge variant={statusColor(inq.status)} size="xs" dot>
                         {inq.status}
                       </Badge>
                     </div>
-                    <p className="text-xs text-brand-700 font-medium mt-0.5">
+                    <p className="text-xs text-neutral-900 font-medium mt-0.5">
                       Re: {inq.listing?.title}
                     </p>
-                    <p className="text-sm text-slate-600 mt-1 line-clamp-2">{inq.message}</p>
+                    <p className="text-sm text-neutral-600 mt-1 line-clamp-2">{inq.message}</p>
                     {inq.reply && (
-                      <p className="text-xs text-slate-400 mt-1.5 italic line-clamp-1">
+                      <p className="text-xs text-neutral-400 mt-1.5 italic line-clamp-1">
                         Reply: {inq.reply}
                       </p>
                     )}
                   </div>
                 </div>
-                <span className="text-xs text-slate-400 shrink-0">{timeAgo(inq.created_at)}</span>
+                <span className="text-xs text-neutral-400 shrink-0">{timeAgo(inq.created_at)}</span>
               </div>
             </div>
           ))}
@@ -166,36 +166,36 @@ export default function InboxPage() {
           <div className="relative bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-fade-up">
 
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+            <div className="flex items-center justify-between p-5 border-b border-neutral-200">
               <div>
-                <h3 className="font-display font-bold text-slate-900">
+                <h3 className="font-display font-bold text-neutral-900">
                   {tab === "inbox" ? "Reply to inquiry" : "Inquiry detail"}
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-neutral-500 mt-0.5">
                   From: {tab === "inbox" ? selected.buyer?.full_name : selected.seller?.full_name}
                 </p>
               </div>
               <button
                 onClick={() => setSelected(null)}
-                className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
               >
-                <X className="w-4 h-4 text-slate-500" />
+                <X className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
 
             <div className="p-5 space-y-4">
               {/* Listing ref */}
-              <div className="p-3 bg-slate-50 rounded-xl">
-                <p className="text-xs text-slate-500 mb-0.5">Regarding</p>
-                <p className="text-sm font-semibold text-slate-900 line-clamp-1">
+              <div className="p-3 bg-neutral-50 rounded-xl">
+                <p className="text-xs text-neutral-500 mb-0.5">Regarding</p>
+                <p className="text-sm font-semibold text-neutral-900 line-clamp-1">
                   {selected.listing?.title}
                 </p>
               </div>
 
               {/* Original message */}
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Message</p>
-                <p className="text-sm text-slate-700 bg-slate-50 rounded-xl p-4 leading-relaxed">
+                <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Message</p>
+                <p className="text-sm text-neutral-700 bg-neutral-50 rounded-xl p-4 leading-relaxed">
                   {selected.message}
                 </p>
               </div>
@@ -206,7 +206,7 @@ export default function InboxPage() {
                   <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">
                     Your Reply
                   </p>
-                  <p className="text-sm text-slate-700 bg-emerald-50 rounded-xl p-4 leading-relaxed border border-emerald-100">
+                  <p className="text-sm text-neutral-700 bg-neutral-50 rounded-xl p-4 leading-relaxed border border-emerald-100">
                     {selected.reply}
                   </p>
                 </div>
@@ -215,7 +215,7 @@ export default function InboxPage() {
               {/* Reply input — only for inbox + open/replied */}
               {tab === "inbox" && selected.status !== "closed" && (
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 block mb-2">
+                  <label className="text-sm font-semibold text-neutral-700 block mb-2">
                     {selected.reply ? "Update Reply" : "Your Reply"}
                   </label>
                   <textarea
@@ -223,7 +223,7 @@ export default function InboxPage() {
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
                     placeholder="Type your reply..."
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 resize-none"
+                    className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-neutral-900 resize-none"
                   />
                 </div>
               )}

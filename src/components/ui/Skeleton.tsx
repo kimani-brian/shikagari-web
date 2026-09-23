@@ -22,17 +22,17 @@ export default function Skeleton({ className, rounded = "lg" }: SkeletonProps) {
 
 export function CarCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-card">
+    <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
       <Skeleton className="w-full h-48" rounded="sm" />
       <div className="p-4 space-y-3">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-6 w-1/2" />
         <div className="flex gap-2 pt-1">
-          <Skeleton className="h-6 w-16" rounded="md" />
-          <Skeleton className="h-6 w-16" rounded="md" />
-          <Skeleton className="h-6 w-16" rounded="md" />
+          <Skeleton className="h-6 w-16" rounded="full" />
+          <Skeleton className="h-6 w-16" rounded="full" />
+          <Skeleton className="h-6 w-16" rounded="full" />
         </div>
-        <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+        <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-4 w-16" />
         </div>
@@ -81,10 +81,10 @@ export function FormSkeleton({ rows = 4 }: { rows?: number }) {
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="space-y-1.5">
           <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-11" rounded="xl" />
+          <Skeleton className="h-10" rounded="full" />
         </div>
       ))}
-      <Skeleton className="h-11 w-32 mt-4" rounded="xl" />
+      <Skeleton className="h-10 w-32 mt-4" rounded="full" />
     </div>
   );
 }

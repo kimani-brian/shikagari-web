@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Building2, UserCheck, ArrowLeft, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import VerifiedBadge from "@/components/shared/VerifiedBadge";
 import { useAdminDealerProfiles, useAdminPrivateSellerProfiles } from "@/hooks/useAdminProfiles";
 import { DealerProfile, PrivateSellerProfile } from "@/types";
 import Button from "@/components/ui/Button";
@@ -41,18 +40,18 @@ export default function VerifiedSellersPage() {
 
   return (
     <div className="space-y-8">
-      <header className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <header className="bg-white rounded-2xl border border-neutral-200  p-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Admin tools</p>
-          <h1 className="font-display text-3xl text-slate-900 mt-1">Verified sellers</h1>
-          <p className="text-sm text-slate-500 mt-2 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.3em] text-neutral-400">Admin tools</p>
+          <h1 className="font-display text-3xl text-neutral-900 mt-1">Verified sellers</h1>
+          <p className="text-sm text-neutral-500 mt-2 max-w-2xl">
             {totalVerified === 0
               ? "No approved seller profiles yet."
               : `${totalVerified} approved seller${totalVerified === 1 ? "" : "s"} ready for spotlight.`}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/dashboard/admin" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900">
+          <Link href="/dashboard/admin" className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-500 hover:text-neutral-900">
             <ArrowLeft className="w-4 h-4" /> Back to approvals
           </Link>
           <Button
@@ -117,28 +116,28 @@ function VerifiedPanel({
   children,
 }: VerifiedPanelProps) {
   return (
-    <section className="bg-white rounded-2xl border border-slate-100 shadow-card p-6 flex flex-col gap-4">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+    <section className="bg-white rounded-2xl border border-neutral-200  p-6 flex flex-col gap-4">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">
         {icon}
         Verified
       </div>
       <div>
-        <h2 className="font-display text-2xl text-slate-900">{title}</h2>
-        <p className="text-sm text-slate-500">{subtitle}</p>
+        <h2 className="font-display text-2xl text-neutral-900">{title}</h2>
+        <p className="text-sm text-neutral-500">{subtitle}</p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">{error}</div>
+        <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50 text-sm text-neutral-700">{error}</div>
       )}
 
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 rounded-2xl bg-slate-100 animate-pulse" />
+            <div key={i} className="h-24 rounded-2xl bg-neutral-100 animate-pulse" />
           ))}
         </div>
       ) : Children.count(children) === 0 ? (
-        <div className="text-sm text-slate-500 border border-dashed border-slate-200 rounded-2xl p-6 text-center">
+        <div className="text-sm text-neutral-500 border border-dashed border-neutral-200 rounded-2xl p-6 text-center">
           {emptyMessage}
         </div>
       ) : (
@@ -152,27 +151,27 @@ function VerifiedPanel({
 
 function DealerRow({ profile }: { profile: DealerProfile }) {
   return (
-    <div className="flex flex-col gap-4 border border-slate-100 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-4 border border-neutral-200 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3">
         {profile.logo_url ? (
           <img
             src={profile.logo_url}
             alt={profile.business_name}
-            className="w-12 h-12 rounded-xl object-cover border border-slate-100"
+            className="w-12 h-12 rounded-xl object-cover border border-neutral-200"
           />
         ) : (
-          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+          <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-400">
             <Building2 className="w-5 h-5" />
           </div>
         )}
         <div>
-          <p className="font-semibold text-slate-900">{profile.business_name}</p>
-          <p className="text-sm text-slate-500">{profile.location}</p>
-          <p className="text-xs text-slate-400">Contact: {profile.user.email}</p>
+          <p className="font-semibold text-neutral-900">{profile.business_name}</p>
+          <p className="text-sm text-neutral-500">{profile.location}</p>
+          <p className="text-xs text-neutral-400">Contact: {profile.user.phone}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <VerifiedBadge size="sm" />
+      <div className="flex items-center gap-2 text-xs text-neutral-500">
+        <span className="w-2 h-2 rounded-full bg-neutral-900 inline-block" />
         <span>Approved {formatDate(profile.approved_at ?? profile.created_at)}</span>
       </div>
     </div>
@@ -181,27 +180,27 @@ function DealerRow({ profile }: { profile: DealerProfile }) {
 
 function PrivateSellerRow({ profile }: { profile: PrivateSellerProfile }) {
   return (
-    <div className="flex flex-col gap-4 border border-slate-100 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
+    <div className="flex flex-col gap-4 border border-neutral-200 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3">
         {profile.profile_photo_url ? (
           <img
             src={profile.profile_photo_url}
             alt={profile.user.full_name}
-            className="w-12 h-12 rounded-xl object-cover border border-slate-100"
+            className="w-12 h-12 rounded-xl object-cover border border-neutral-200"
           />
         ) : (
-          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+          <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-400">
             <UserCheck className="w-5 h-5" />
           </div>
         )}
         <div>
-          <p className="font-semibold text-slate-900">{profile.user.full_name}</p>
-          <p className="text-sm text-slate-500">{profile.location}</p>
-          <p className="text-xs text-slate-400">National ID: {profile.national_id_no}</p>
+          <p className="font-semibold text-neutral-900">{profile.user.full_name}</p>
+          <p className="text-sm text-neutral-500">{profile.location}</p>
+          <p className="text-xs text-neutral-400">National ID: {profile.national_id_no}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <VerifiedBadge size="sm" />
+      <div className="flex items-center gap-2 text-xs text-neutral-500">
+        <span className="w-2 h-2 rounded-full bg-neutral-900 inline-block" />
         <span>Approved {formatDate(profile.approved_at ?? profile.created_at)}</span>
       </div>
     </div>

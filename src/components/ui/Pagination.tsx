@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Icon from "@/components/ui/Icon";
 
 interface PaginationProps {
-  page:         number;
-  totalPages:   number;
+  page: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
-  className?:   string;
+  className?: string;
 }
 
 export default function Pagination({
@@ -23,7 +23,7 @@ export default function Pagination({
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
     const pages: (number | "...")[] = [1];
-    if (page > 3)          pages.push("...");
+    if (page > 3) pages.push("...");
     for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
       pages.push(i);
     }
@@ -34,28 +34,17 @@ export default function Pagination({
 
   return (
     <div className={cn("flex items-center justify-center gap-1", className)}>
-      <PageBtn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page === 1}
-        aria-label="Previous page"
-      >
-        <ChevronLeft className="w-4 h-4" />
+      <PageBtn onClick={() => onPageChange(page - 1)} disabled={page === 1} aria-label="Previous page">
+        <Icon name="chevron_left" size={18} />
       </PageBtn>
 
       {getPages().map((p, i) =>
         p === "..." ? (
-          <span
-            key={`ellipsis-${i}`}
-            className="w-9 h-9 flex items-center justify-center text-slate-400 text-sm"
-          >
+          <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-neutral-400 text-sm">
             …
           </span>
         ) : (
-          <PageBtn
-            key={p}
-            onClick={() => onPageChange(p as number)}
-            active={p === page}
-          >
+          <PageBtn key={p} onClick={() => onPageChange(p as number)} active={p === page}>
             {p}
           </PageBtn>
         )
@@ -66,7 +55,7 @@ export default function Pagination({
         disabled={page === totalPages}
         aria-label="Next page"
       >
-        <ChevronRight className="w-4 h-4" />
+        <Icon name="chevron_right" size={18} />
       </PageBtn>
     </div>
   );
@@ -79,10 +68,10 @@ function PageBtn({
   disabled,
   "aria-label": ariaLabel,
 }: {
-  children:      React.ReactNode;
-  onClick:       () => void;
-  active?:       boolean;
-  disabled?:     boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+  active?: boolean;
+  disabled?: boolean;
   "aria-label"?: string;
 }) {
   return (
@@ -91,11 +80,11 @@ function PageBtn({
       disabled={disabled}
       aria-label={ariaLabel}
       className={cn(
-        "w-9 h-9 rounded-xl text-sm font-semibold transition-all",
+        "w-9 h-9 rounded-full text-sm font-medium transition-colors",
         "flex items-center justify-center",
         active
-          ? "bg-brand-700 text-white shadow-blue"
-          : "bg-white border border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-700",
+          ? "bg-neutral-900 text-white"
+          : "bg-white border border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900",
         disabled && "opacity-40 cursor-not-allowed pointer-events-none"
       )}
     >

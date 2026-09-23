@@ -73,18 +73,18 @@ export default function ProfilePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-display text-xl font-bold text-slate-900">Profile Settings</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Manage your account details</p>
+        <h1 className="font-display text-xl font-bold text-neutral-900">Profile Settings</h1>
+        <p className="text-sm text-neutral-500 mt-0.5">Manage your account details</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
 
           {/* Personal info */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card">
+          <div className="bg-white rounded-2xl p-6 border border-neutral-200 ">
             <div className="flex items-center gap-2 mb-5">
-              <User className="w-4 h-4 text-slate-400" />
-              <h3 className="font-display font-bold text-slate-900">Personal Information</h3>
+              <User className="w-4 h-4 text-neutral-400" />
+              <h3 className="font-display font-bold text-neutral-900">Personal Information</h3>
             </div>
             <form onSubmit={handleProfileUpdate} className="space-y-4">
               <Input
@@ -118,13 +118,13 @@ export default function ProfilePage() {
           </div>
 
           {/* Change password */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-card">
+          <div className="bg-white rounded-2xl p-6 border border-neutral-200 ">
             <div className="flex items-center gap-2 mb-5">
-              <Lock className="w-4 h-4 text-slate-400" />
-              <h3 className="font-display font-bold text-slate-900">Change Password</h3>
+              <Lock className="w-4 h-4 text-neutral-400" />
+              <h3 className="font-display font-bold text-neutral-900">Change Password</h3>
             </div>
             {pwdError && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 mb-4">
+              <div className="flex items-start gap-2 p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-700 mb-4">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 {pwdError}
               </div>
@@ -172,16 +172,16 @@ export default function ProfilePage() {
         <div className="space-y-5">
 
           {/* Account card */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card">
+          <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
             <div className="flex flex-col items-center text-center py-4">
-              <div className="w-16 h-16 rounded-2xl bg-brand-700 flex items-center justify-center mb-3">
+              <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mb-3">
                 <span className="font-display text-2xl font-bold text-white">
                   {user?.full_name?.[0]?.toUpperCase()}
                 </span>
               </div>
-              <p className="font-display font-bold text-slate-900">{user?.full_name}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{user?.email}</p>
-              <p className="text-xs text-slate-500 capitalize mt-1 px-3 py-1 bg-slate-100 rounded-full mt-2">
+              <p className="font-display font-bold text-neutral-900">{user?.full_name}</p>
+              <p className="text-xs text-neutral-400 mt-0.5">{user?.email}</p>
+              <p className="text-xs text-neutral-500 capitalize mt-1 px-3 py-1 bg-neutral-100 rounded-full mt-2">
                 {user?.role}
               </p>
               {isSeller && user?.is_verified && (
@@ -194,21 +194,21 @@ export default function ProfilePage() {
 
           {/* Seller profile status */}
           {user?.role === "seller" && (
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-card">
+            <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
               <div className="flex items-center gap-2 mb-4">
-                <Car className="w-4 h-4 text-slate-400" />
-                <h3 className="font-display font-bold text-slate-900 text-sm">Seller Profile</h3>
+                <Car className="w-4 h-4 text-neutral-400" />
+                <h3 className="font-display font-bold text-neutral-900 text-sm">Seller Profile</h3>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Dealer profile</span>
-                  <Link href="/dealers/profile/new" className="text-xs font-semibold text-brand-700 hover:text-brand-800">
+                  <span className="text-xs text-neutral-500">Dealer profile</span>
+                  <Link href="/dealers/profile/new" className="text-xs font-semibold text-neutral-900 hover:text-brand-800">
                     Manage →
                   </Link>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Private seller</span>
-                  <Link href="/sellers/profile/new" className="text-xs font-semibold text-brand-700 hover:text-brand-800">
+                  <span className="text-xs text-neutral-500">Private seller</span>
+                  <Link href="/sellers/profile/new" className="text-xs font-semibold text-neutral-900 hover:text-brand-800">
                     Manage →
                   </Link>
                 </div>
@@ -217,12 +217,12 @@ export default function ProfilePage() {
           )}
 
           {/* Security info */}
-          <div className="bg-brand-50 rounded-2xl p-5 border border-brand-100">
+          <div className="bg-neutral-50 rounded-2xl p-5 border border-brand-100">
             <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
+              <ShieldCheck className="w-5 h-5 text-neutral-700 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-brand-900 mb-1">Account Security</p>
-                <p className="text-xs text-brand-700 leading-relaxed">
+                <p className="text-xs text-neutral-900 leading-relaxed">
                   Use a strong, unique password. Never share your credentials with anyone.
                 </p>
               </div>
