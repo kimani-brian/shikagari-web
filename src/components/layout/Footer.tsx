@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { Facebook, Instagram } from "lucide-react";
 import Icon from "@/components/ui/Icon";
 
 const FOOTER_LINKS = {
   Browse: [
     { label: "All cars", href: "/listings" },
-    { label: "Dealers", href: "/listings?seller_type=dealer" },
+    { label: "Dealers", href: "/dealers" },
     { label: "Private sellers", href: "/listings?seller_type=private" },
     { label: "New listings", href: "/listings?sort_by=newest" },
   ],
@@ -22,7 +23,13 @@ const FOOTER_LINKS = {
   ],
 };
 
-const KENYAN_CITIES = ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika"];
+function XBrandIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
 
 export default function Footer() {
   return (
@@ -65,20 +72,27 @@ export default function Footer() {
             </div>
 
             <div className="flex items-center gap-2">
-              {[
-                { label: "Facebook", href: "#" },
-                { label: "Twitter", href: "#" },
-                { label: "Instagram", href: "#" },
-              ].map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-500 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
-                >
-                  <Icon name="share" size={16} />
-                </a>
-              ))}
+              <a
+                href="#"
+                aria-label="X"
+                className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-500 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors"
+              >
+                <XBrandIcon className="w-4 h-4" />
+              </a>
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-500 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-500 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white transition-colors"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
             </div>
           </div>
 
@@ -102,18 +116,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-neutral-200">
-          <div className="flex flex-wrap gap-2 mb-6">
-            {KENYAN_CITIES.map((city) => (
-              <Link
-                key={city}
-                href={`/listings?location=${city}`}
-                className="px-3 py-1 rounded-full text-xs text-neutral-500 border border-neutral-200 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
-              >
-                {city}
-              </Link>
-            ))}
-          </div>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-neutral-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-neutral-500">© {new Date().getFullYear()} ShikaGari. All rights reserved.</p>
             <p className="text-xs text-neutral-400">Nairobi, Kenya</p>
           </div>

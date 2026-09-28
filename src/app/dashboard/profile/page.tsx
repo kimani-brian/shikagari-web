@@ -1,37 +1,83 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useEffect, useRef, useState, FormEvent } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { ApprovalBadge } from "@/components/ui/Badge";
-import VerifiedBadge from "@/components/shared/VerifiedBadge";
 import toast from "react-hot-toast";
-import { User, Lock, ShieldCheck, Car, AlertCircle } from "lucide-react";
+import { User } from "lucide-react";
 import Link from "next/link";
+import { ApprovalStatus } from "@/types";
+
+interface SellerProfileState {
+  kind: "dealer" | "seller";
+  status: ApprovalStatus;
+}
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
-  const isSeller = user?.role === "seller";
+  const isSeller = user?.role === "seller" || user?.role === "dealer";
+  const isDealer = user?.role === "dealer";
 
   const [fullName,     setFullName]     = useState(user?.full_name ?? "");
+  const [email,        setEmail]        = useState(user?.email     ?? "");
   const [phone,        setPhone]        = useState(user?.phone     ?? "");
   const [profileLoading, setProfileLoading] = useState(false);
+  const [sellerProfile, setSellerProfile] = useState<SellerProfileState | null>(null);
+  const [checkingSellerProfile, setCheckingSellerProfile] = useState(true);
 
-  const [currentPwd,   setCurrentPwd]   = useState("");
-  const [newPwd,       setNewPwd]       = useState("");
-  const [confirmPwd,   setConfirmPwd]   = useState("");
-  const [pwdLoading,   setPwdLoading]   = useState(false);
-  const [pwdError,     setPwdError]     = useState("");
+  // Fill in once the session hydrates (AuthContext loads from storage on mount).
+  useEffect(() => {
+    if (user) {
+      setFullName((v) => v || user.full_name || "");
+      setEmail((v) => v || user.email || "");
+      setPhone((v) => v || user.phone || "");
+    }
+  }, [user]);
 
-  const handleProfileUpdate = async (e: FormEvent) => {
-    e.preventDefault();
+  // Load verification status: dealer profile first, private seller fallback
+  // (mirrors the status check on the dashboard overview page).
+  useEffect(() => {
+    if (!isSeller) {
+      setCheckingSellerProfile(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        try {
+          const dealerRes = await api.get("/dealers/profile");
+          if (!cancelled && dealerRes.data.data) {
+            setSellerProfile({ kind: "dealer", status: dealerRes.data.data.approval_status ?? "pending" });
+            return;
+          }
+        } catch { /* try private seller profile next */ }
+        try {
+          const sellerRes = await api.get("/sellers/profile");
+          if (!cancelled && sellerRes.data.data) {
+            setSellerProfile({ kind: "seller", status: sellerRes.data.data.approval_status ?? "pending" });
+          }
+        } catch { /* no profile yet */ }
+      } finally {
+        // Guaranteed on every path — the card can never stick on "Checking status…".
+        if (!cancelled) setCheckingSellerProfile(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSeller]);
+
+  const saveProfile = async (name: string, mail: string, phoneNumber: string) => {
+    if (profileLoading) return;
     try {
       setProfileLoading(true);
       await api.patch("/users/me", {
-        full_name: fullName.trim() || undefined,
-        phone:     phone.trim()    || undefined,
+        full_name: name.trim() || undefined,
+        email:     mail.trim() && mail.trim() !== (user?.email ?? "") ? mail.trim() : undefined,
+        phone:     phoneNumber.trim() || undefined,
       });
       await refreshUser();
       toast.success("Profile updated!");
@@ -42,33 +88,30 @@ export default function ProfilePage() {
     }
   };
 
-  const handlePasswordChange = async (e: FormEvent) => {
+  const handleProfileUpdate = async (e: FormEvent) => {
     e.preventDefault();
-    setPwdError("");
-
-    if (newPwd.length < 8) {
-      setPwdError("New password must be at least 8 characters");
-      return;
-    }
-    if (newPwd !== confirmPwd) {
-      setPwdError("Passwords do not match");
-      return;
-    }
-
-    try {
-      setPwdLoading(true);
-      await api.patch("/users/me/password", {
-        current_password: currentPwd,
-        new_password:     newPwd,
-      });
-      toast.success("Password changed successfully!");
-      setCurrentPwd(""); setNewPwd(""); setConfirmPwd("");
-    } catch (err: any) {
-      setPwdError(err?.response?.data?.message ?? "Failed to change password");
-    } finally {
-      setPwdLoading(false);
-    }
+    await saveProfile(fullName, email, phone);
   };
+
+  // Auto-save shortly after the user stops typing (no save button).
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (!user) return;
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    const dirty =
+      fullName.trim() !== (user.full_name ?? "").trim() ||
+      email.trim() !== (user.email ?? "").trim() ||
+      phone.trim() !== (user.phone ?? "").trim();
+    if (!dirty) return;
+    const t = setTimeout(() => {
+      saveProfile(fullName, email, phone);
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullName, email, phone, user]);
 
   return (
     <div className="space-y-5">
@@ -96,9 +139,11 @@ export default function ProfilePage() {
               />
               <Input
                 label="Email Address"
-                value={user?.email ?? ""}
-                disabled
-                hint="Email address cannot be changed"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
               />
               <Input
                 label="Phone Number"
@@ -106,64 +151,9 @@ export default function ProfilePage() {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="0712 345 678"
               />
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                loading={profileLoading}
-              >
-                Save Changes
-              </Button>
-            </form>
-          </div>
-
-          {/* Change password */}
-          <div className="bg-white rounded-2xl p-6 border border-neutral-200 ">
-            <div className="flex items-center gap-2 mb-5">
-              <Lock className="w-4 h-4 text-neutral-400" />
-              <h3 className="font-display font-bold text-neutral-900">Change Password</h3>
-            </div>
-            {pwdError && (
-              <div className="flex items-start gap-2 p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-700 mb-4">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                {pwdError}
-              </div>
-            )}
-            <form onSubmit={handlePasswordChange} className="space-y-4">
-              <Input
-                label="Current Password"
-                type="password"
-                value={currentPwd}
-                onChange={(e) => setCurrentPwd(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-              <Input
-                label="New Password"
-                type="password"
-                value={newPwd}
-                onChange={(e) => setNewPwd(e.target.value)}
-                hint="Minimum 8 characters"
-                required
-                autoComplete="new-password"
-              />
-              <Input
-                label="Confirm New Password"
-                type="password"
-                value={confirmPwd}
-                onChange={(e) => setConfirmPwd(e.target.value)}
-                success={confirmPwd && confirmPwd === newPwd ? "Passwords match" : undefined}
-                required
-                autoComplete="new-password"
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                loading={pwdLoading}
-              >
-                Update Password
-              </Button>
+              <p className="text-xs text-neutral-400">
+                {profileLoading ? "Saving…" : "Changes save automatically."}
+              </p>
             </form>
           </div>
         </div>
@@ -171,63 +161,55 @@ export default function ProfilePage() {
         {/* Right sidebar */}
         <div className="space-y-5">
 
-          {/* Account card */}
-          <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
-            <div className="flex flex-col items-center text-center py-4">
-              <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mb-3">
-                <span className="font-display text-2xl font-bold text-white">
-                  {user?.full_name?.[0]?.toUpperCase()}
-                </span>
+          {/* Seller profile status */}
+          {isSeller && (
+            <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
+              <div className="mb-4">
+                <h3 className="font-display font-bold text-neutral-900 text-sm">Profile</h3>
               </div>
-              <p className="font-display font-bold text-neutral-900">{user?.full_name}</p>
-              <p className="text-xs text-neutral-400 mt-0.5">{user?.email}</p>
-              <p className="text-xs text-neutral-500 capitalize mt-1 px-3 py-1 bg-neutral-100 rounded-full mt-2">
-                {user?.role}
-              </p>
-              {isSeller && user?.is_verified && (
-                <div className="mt-3">
-                  <VerifiedBadge size="md" />
+              {checkingSellerProfile ? (
+                <p className="text-xs text-neutral-400">Checking status…</p>
+              ) : sellerProfile ? (
+                <div className="space-y-3">
+                  <ApprovalBadge status={sellerProfile.status} />
+                  <p className="text-xs text-neutral-500 leading-relaxed">
+                    {sellerProfile.status === "pending" &&
+                      "Under review. You can edit your details while you wait."}
+                    {sellerProfile.status === "rejected" &&
+                      "Not approved. Update your details or contact support for another review."}
+                  </p>
+                  <Link
+                    href={sellerProfile.kind === "dealer" ? "/dealers/profile/new" : "/sellers/profile/new"}
+                    className="block"
+                  >
+                    <Button variant="secondary" size="sm" fullWidth>
+                      {sellerProfile.status === "approved"
+                        ? "Edit profile"
+                        : sellerProfile.status === "pending"
+                          ? "View submission"
+                          : "Update details"}
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-neutral-500 leading-relaxed">
+                    {isDealer
+                      ? "Create your dealership profile to get verified and start listing."
+                      : "Create your seller profile to get verified and start listing."}
+                  </p>
+                  <Link
+                    href={isDealer ? "/dealers/profile/new" : "/sellers/profile/new"}
+                    className="block"
+                  >
+                    <Button variant="primary" size="sm" fullWidth>
+                      Create profile
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Seller profile status */}
-          {user?.role === "seller" && (
-            <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
-              <div className="flex items-center gap-2 mb-4">
-                <Car className="w-4 h-4 text-neutral-400" />
-                <h3 className="font-display font-bold text-neutral-900 text-sm">Seller Profile</h3>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-neutral-500">Dealer profile</span>
-                  <Link href="/dealers/profile/new" className="text-xs font-semibold text-neutral-900 hover:text-brand-800">
-                    Manage →
-                  </Link>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-neutral-500">Private seller</span>
-                  <Link href="/sellers/profile/new" className="text-xs font-semibold text-neutral-900 hover:text-brand-800">
-                    Manage →
-                  </Link>
-                </div>
-              </div>
-            </div>
           )}
-
-          {/* Security info */}
-          <div className="bg-neutral-50 rounded-2xl p-5 border border-brand-100">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-neutral-700 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-brand-900 mb-1">Account Security</p>
-                <p className="text-xs text-neutral-900 leading-relaxed">
-                  Use a strong, unique password. Never share your credentials with anyone.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

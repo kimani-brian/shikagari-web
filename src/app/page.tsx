@@ -15,15 +15,39 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ListingCard, PrivateSellerProfile } from "@/types";
 
 const BODY_TYPES = [
-  { label: "Sedan", icon: "directions_car" as const, query: "Sedan" },
-  { label: "SUV", icon: "directions_car" as const, query: "SUV" },
-  { label: "Pickup", icon: "local_shipping" as const, query: "Pickup" },
-  { label: "Hatchback", icon: "directions_car" as const, query: "Hatchback" },
-  { label: "Van", icon: "airport_shuttle" as const, query: "Van" },
-  { label: "Wagon", icon: "directions_car" as const, query: "Station Wagon" },
+  { label: "Sedan", query: "Sedan" },
+  { label: "SUV", query: "SUV" },
+  { label: "Pickup", query: "Pickup" },
+  { label: "Hatchback", query: "Hatchback" },
+  { label: "Van", query: "Van" },
+  { label: "Wagon", query: "Station Wagon" },
+  { label: "Coupe", query: "Coupe" },
+  { label: "Convertible", query: "Convertible" },
+  { label: "Crossover", query: "Crossover" },
+  { label: "EV", query: "EV" },
+  { label: "Minivan", query: "Minivan" },
+  { label: "Sports", query: "Sports" },
 ];
 
-const MAKES = ["Toyota", "Nissan", "Mazda", "Subaru", "Honda", "Mitsubishi", "Isuzu", "Mercedes"];
+const MAKES = [
+  { name: "Toyota", logo: "https://www.carlogos.org/car-logos/toyota-logo.png" },
+  { name: "Nissan", logo: "https://www.carlogos.org/car-logos/nissan-logo.png" },
+  { name: "Mazda", logo: "https://www.carlogos.org/car-logos/mazda-logo.png" },
+  { name: "Subaru", logo: "https://www.carlogos.org/car-logos/subaru-logo.png" },
+  { name: "Honda", logo: "https://www.carlogos.org/car-logos/honda-logo.png" },
+  { name: "Tesla", logo: "https://www.carlogos.org/car-logos/tesla-logo-2007.png" },
+  { name: "Isuzu", logo: "https://www.carlogos.org/car-logos/isuzu-logo.png" },
+  { name: "Mercedes", logo: "https://www.carlogos.org/car-logos/mercedes-benz-logo.png" },
+  // second row
+  { name: "Volkswagen", logo: "https://www.carlogos.org/car-logos/volkswagen-logo.png" },
+  { name: "BMW", logo: "https://www.carlogos.org/car-logos/bmw-logo.png" },
+  { name: "Audi", logo: "https://www.carlogos.org/car-logos/audi-logo.png" },
+  { name: "Ford", logo: "https://www.carlogos.org/car-logos/ford-logo.png" },
+  { name: "Land Rover", logo: "https://www.carlogos.org/car-logos/land-rover-logo.png" },
+  { name: "Suzuki", logo: "https://www.carlogos.org/car-logos/suzuki-logo.png" },
+  { name: "Hyundai", logo: "https://www.carlogos.org/car-logos/hyundai-logo.png" },
+  { name: "BYD", logo: "https://www.carlogos.org/car-logos/byd-logo.png" },
+];
 
 const STEPS = [
   {
@@ -40,6 +64,27 @@ const STEPS = [
     icon: "chat_bubble" as const,
     title: "Contact",
     desc: "Message sellers directly and arrange a viewing at a time that suits you.",
+  },
+];
+
+const ACCOUNT_TYPES = [
+  {
+    title: "Buying a car",
+    desc: "Browse thousands of cars across Kenya. Save the ones you like and message sellers directly to arrange a viewing.",
+    cta: "Start browsing",
+    href: "/listings",
+  },
+  {
+    title: "Selling your car",
+    desc: "Got a car to sell? List it in minutes get verified. Start getting inquiries.",
+    cta: "Join as a seller",
+    href: "/register?role=seller",
+  },
+  {
+    title: "Running a dealership",
+    desc: "Put your whole stock online under your business name. Buyers can find all your cars in one place. Start getting inquiries today.",
+    cta: "Join as a dealer",
+    href: "/register?role=dealer",
   },
 ];
 
@@ -222,10 +267,9 @@ export default function HomePage() {
               <Link
                 key={cat.label}
                 href={`/listings?search=${encodeURIComponent(cat.query)}`}
-                className="group flex flex-col items-center gap-2 py-6 px-3 rounded-xl border border-neutral-200 hover:border-neutral-900 bg-white transition-colors"
+                className="group flex items-center justify-center py-6 px-3 rounded-xl border border-neutral-200 hover:border-neutral-900 bg-white transition-colors"
               >
-                <Icon name={cat.icon} size={28} className="text-neutral-700 group-hover:text-neutral-900" />
-                <span className="text-xs font-medium text-neutral-700 group-hover:text-neutral-900">
+                <span className="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 text-center">
                   {cat.label}
                 </span>
               </Link>
@@ -266,15 +310,34 @@ export default function HomePage() {
       {/* Browse by make */}
       <section className="py-10 border-b border-neutral-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-base font-semibold text-neutral-900 mb-6">Browse by make</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-end justify-between mb-6">
+            <h2 className="text-base font-semibold text-neutral-900">Browse by make</h2>
+            <Link href="/listings" className="text-xs font-medium text-neutral-600 hover:text-neutral-900 flex items-center gap-1">
+              View all <Icon name="chevron_right" size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
             {MAKES.map((make) => (
               <Link
-                key={make}
-                href={`/listings?make=${encodeURIComponent(make)}`}
-                className="px-4 py-2 rounded-full border border-neutral-200 bg-white text-xs font-medium text-neutral-700 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
+                key={make.name}
+                href={`/listings?make=${encodeURIComponent(make.name)}`}
+                className="group flex flex-col items-center gap-2 py-5 px-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-900 transition-colors"
               >
-                {make}
+                <span className="w-12 h-12 flex items-center justify-center bg-white rounded-lg overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={make.logo}
+                    alt={`${make.name} logo`}
+                    className="w-10 h-10 object-contain"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </span>
+                <span className="text-xs font-medium text-neutral-700 group-hover:text-neutral-900 text-center">
+                  {make.name}
+                </span>
               </Link>
             ))}
           </div>
@@ -299,6 +362,30 @@ export default function HomePage() {
                 </span>
                 <Icon name="chevron_right" size={16} className="text-neutral-300 group-hover:text-neutral-700" />
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Account types */}
+      <section className="py-10 border-b border-neutral-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-6">Pick the account that fits you</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {ACCOUNT_TYPES.map((account) => (
+              <div
+                key={account.title}
+                className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6"
+              >
+                <p className="text-base font-semibold text-neutral-900">{account.title}</p>
+                <p className="text-sm text-neutral-500 leading-relaxed mt-1.5 mb-5">{account.desc}</p>
+                <Link
+                  href={account.href}
+                  className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-neutral-900 hover:underline"
+                >
+                  {account.cta} <Icon name="arrow_forward" size={16} />
+                </Link>
+              </div>
             ))}
           </div>
         </div>

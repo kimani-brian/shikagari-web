@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import Button from "@/components/ui/Button";
@@ -18,17 +18,36 @@ const ROLES = [
     description: "Browse listings and contact sellers",
   },
   {
-    value: "seller",
+    value: "selling",
     label: "Selling",
     description: "List vehicles as dealer or private seller",
   },
 ];
 
-export default function RegisterPage() {
+const SELLER_TYPES = [
+  {
+    value: "dealer",
+    label: "Dealer",
+    description: "Business with multiple cars in stock",
+  },
+  {
+    value: "seller",
+    label: "Private seller",
+    description: "Individual selling your own car",
+  },
+];
+
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
 
-  const [role, setRole] = useState<"buyer" | "seller">("buyer");
+  // Preselect the account type when arriving from a landing page card,
+  // e.g. /register?role=dealer
+  const presetRole = searchParams.get("role");
+  const [role, setRole] = useState<"buyer" | "seller" | "dealer">(
+    presetRole === "dealer" ? "dealer" : presetRole === "seller" ? "seller" : "buyer"
+  );
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -67,10 +86,10 @@ export default function RegisterPage() {
       login(token, user);
       toast.success(`Welcome, ${user.full_name.split(" ")[0]}`);
 
-      if (role === "seller") {
-        router.push("/dashboard");
-      } else {
+      if (role === "buyer") {
         router.push("/listings");
+      } else {
+        router.push("/dashboard");
       }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? "Registration failed. Please try again.";
@@ -100,31 +119,73 @@ export default function RegisterPage() {
         </div>
 
         <div className="mb-6">
-          <p className="text-sm font-medium text-neutral-700 mb-3">I am joining as</p>
-          <div className="grid grid-cols-2 gap-3">
-            {ROLES.map((r) => {
-              const isActive = role === r.value;
-              return (
-                <button
-                  key={r.value}
-                  type="button"
-                  onClick={() => setRole(r.value as "buyer" | "seller")}
-                  className={cn(
-                    "flex flex-col items-start gap-2 p-4 rounded-xl border text-left transition-colors",
-                    isActive ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900"
-                  )}
-                >
-                  <Icon name={r.value === "buyer" ? "search" : "storefront"} size={18} className={isActive ? "text-white" : "text-neutral-500"} />
-                  <div>
-                    <p className={cn("text-sm font-medium", isActive ? "text-white" : "text-neutral-900")}>{r.label}</p>
-                    <p className={cn("text-xs leading-relaxed mt-0.5", isActive ? "text-neutral-300" : "text-neutral-500")}>
-                      {r.description}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          {role === "buyer" ? (
+            <>
+              <p className="text-sm font-medium text-neutral-700 mb-3">I am joining as</p>
+              <div className="grid grid-cols-2 gap-3">
+                {ROLES.map((r) => {
+                  const isActive = r.value === "buyer";
+                  return (
+                    <button
+                      key={r.value}
+                      type="button"
+                      onClick={() => {
+                        if (r.value !== "buyer") setRole("seller");
+                      }}
+                      className={cn(
+                        "flex flex-col items-start gap-2 p-4 rounded-xl border text-left transition-colors",
+                        isActive ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900"
+                      )}
+                    >
+                      <Icon name={r.value === "buyer" ? "search" : "storefront"} size={18} className={isActive ? "text-white" : "text-neutral-500"} />
+                      <div>
+                        <p className={cn("text-sm font-medium", isActive ? "text-white" : "text-neutral-900")}>{r.label}</p>
+                        <p className={cn("text-xs leading-relaxed mt-0.5", isActive ? "text-neutral-300" : "text-neutral-500")}>
+                          {r.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setRole("buyer")}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 mb-3 transition-colors"
+              >
+                <Icon name="arrow_back" size={16} />
+                Back
+              </button>
+              <p className="text-sm font-medium text-neutral-700 mb-3">Selling as</p>
+              <div className="grid grid-cols-2 gap-3">
+                {SELLER_TYPES.map((t) => {
+                  const isActive = role === t.value;
+                  return (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setRole(t.value as "seller" | "dealer")}
+                      className={cn(
+                        "flex flex-col items-start gap-2 p-4 rounded-xl border text-left transition-colors",
+                        isActive ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900"
+                      )}
+                    >
+                      <Icon name={t.value === "dealer" ? "store" : "person"} size={18} className={isActive ? "text-white" : "text-neutral-500"} />
+                      <div>
+                        <p className={cn("text-sm font-medium", isActive ? "text-white" : "text-neutral-900")}>{t.label}</p>
+                        <p className={cn("text-xs leading-relaxed mt-0.5", isActive ? "text-neutral-300" : "text-neutral-500")}>
+                          {t.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         {apiError && (
@@ -197,11 +258,13 @@ export default function RegisterPage() {
             autoComplete="new-password"
           />
 
-          {role === "seller" && (
+          {role !== "buyer" && (
             <div className="flex items-start gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-600">
               <Icon name="info" size={18} className="shrink-0 mt-0.5" />
               <p>
-                After registering, you will create a dealer or private seller profile. Admin approval is required before listing.
+                {role === "dealer"
+                  ? "After registering, you will create a dealer profile with your business details. Admin approval is required before listing."
+                  : "After registering, you will create a private seller profile with your ID details. Admin approval is required before listing."}
               </p>
             </div>
           )}
@@ -223,5 +286,19 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
+          <p className="text-sm text-neutral-500">Loading</p>
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }

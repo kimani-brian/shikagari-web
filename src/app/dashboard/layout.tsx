@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { accountPillLabel, useMyDealerBusinessName } from "@/hooks/useMyDealerProfile";
 import { cn } from "@/lib/utils";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import {
@@ -33,7 +34,9 @@ export default function DashboardLayout({
   const router              = useRouter();
   const pathname            = usePathname();
   const { user, isLoggedIn, isLoading, logout } = useAuth();
-  const isSeller            = user?.role === "seller";
+  const isSeller            = user?.role === "seller" || user?.role === "dealer";
+  const dealerBusinessName  = useMyDealerBusinessName(user?.role);
+  const pillLabel           = accountPillLabel(user?.role, user?.full_name, dealerBusinessName);
   const navItems = user?.role === "admin" ? ADMIN_NAV_ITEMS : BASE_NAV_ITEMS;
 
   // Redirect unauthenticated users
@@ -61,20 +64,19 @@ export default function DashboardLayout({
 
             {/* User card */}
             <div className="bg-white rounded-2xl p-5 border border-neutral-200  mb-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-xl bg-neutral-900 flex items-center justify-center shrink-0">
-                  <span className="font-display font-bold text-white text-base">
+              <div className="flex flex-col items-center text-center py-4">
+                <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mb-3">
+                  <span className="font-display text-2xl font-bold text-white">
                     {user?.full_name?.[0]?.toUpperCase()}
                   </span>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-neutral-900 text-sm truncate">
-                    {user?.full_name}
+                <p className="font-display font-bold text-neutral-900">{user?.full_name}</p>
+                <p className="text-xs text-neutral-400 mt-0.5 break-all">{user?.email}</p>
+                {pillLabel && (
+                  <p className="text-xs text-neutral-500 capitalize mt-2 px-3 py-1 bg-neutral-100 rounded-full">
+                    {pillLabel}
                   </p>
-                  <p className="text-xs text-neutral-400 capitalize truncate">
-                    {user?.role}
-                  </p>
-                </div>
+                )}
               </div>
 
             </div>

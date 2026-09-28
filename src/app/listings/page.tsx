@@ -28,6 +28,8 @@ function parseFiltersFromURL(params: URLSearchParams): ListingFilters {
     fuel_type:    (params.get("fuel_type")   as ListingFilters["fuel_type"])   || undefined,
     transmission: (params.get("transmission") as ListingFilters["transmission"]) || undefined,
     seller_type:  (params.get("seller_type") as ListingFilters["seller_type"]) || undefined,
+    dealer_id:    params.get("dealer_id")    || undefined,
+    user_id:      params.get("user_id")      || undefined,
     sort_by:      params.get("sort_by")      || "newest",
     page:         params.get("page")         ? Number(params.get("page"))      : 1,
     per_page:     20,

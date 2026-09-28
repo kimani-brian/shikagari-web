@@ -49,7 +49,8 @@ type IconName =
   | "expand_less"
   | "payments"
   | "handshake"
-  | "storefront";
+  | "storefront"
+  | "store";
 
 interface IconProps {
   name: IconName;

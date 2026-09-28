@@ -15,7 +15,7 @@ export interface PaginationMeta {
 }
 
 // ── User ──────────────────────────────────────────────────────────────────
-export type UserRole = "buyer" | "seller" | "admin";
+export type UserRole = "buyer" | "seller" | "dealer" | "admin";
 
 export interface User {
   id:          string;
@@ -57,6 +57,7 @@ export interface PrivateSellerProfile {
   user_id:           string;
   national_id_no:    string;
   location:          string;
+  address:           string;
   profile_photo_url: string;
   bio:               string;
   approval_status:   ApprovalStatus;
@@ -148,6 +149,8 @@ export interface ListingFilters {
   fuel_type?:    FuelType;
   transmission?: Transmission;
   seller_type?:  SellerType;
+  dealer_id?:    string;
+  user_id?:      string;
   sort_by?:      string;
   page?:         number;
   per_page?:     number;

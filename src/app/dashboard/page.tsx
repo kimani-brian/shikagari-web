@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [stats,          setStats]          = useState<DashboardStats | null>(null);
   const [recentListings, setRecentListings] = useState<ListingCard[]>([]);
   const [dealerStatus,   setDealerStatus]   = useState<string | null>(null);
+  const [dealerName,     setDealerName]     = useState<string | null>(null);
   const [sellerStatus,   setSellerStatus]   = useState<string | null>(null);
   const [loading,        setLoading]        = useState(true);
   const [pendingCounts,  setPendingCounts]  = useState<{ dealers: number | null; sellers: number | null}>({
@@ -43,7 +44,8 @@ export default function DashboardPage() {
     return `${count} ${singular}${count === 1 ? "" : "s"} pending`;
   };
 
-  const isSeller = user?.role === "seller";
+  const isSeller = user?.role === "seller" || user?.role === "dealer";
+  const isDealer = user?.role === "dealer";
   const isAdmin  = user?.role === "admin";
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export default function DashboardPage() {
         try {
           const dealerRes = await api.get("/dealers/profile");
           setDealerStatus(dealerRes.data.data?.approval_status ?? null);
+          setDealerName(dealerRes.data.data?.business_name ?? null);
         } catch { /* No dealer profile */ }
 
         try {
@@ -124,6 +127,20 @@ export default function DashboardPage() {
   }, [isAdmin]);
 
   const approvalStatus = isSeller ? dealerStatus ?? sellerStatus : null;
+  // Dealers see their dealership name instead of "dealer account";
+  // hidden entirely when it would repeat the user's name.
+  // Private sellers see "Private seller" instead of "seller account".
+  const overviewSubtitle = isDealer
+    ? dealerName?.trim()
+      ? dealerName.trim().toLowerCase() === user?.full_name?.trim().toLowerCase()
+        ? null
+        : dealerName
+      : "Dealer account"
+    : user?.role === "seller"
+      ? "Private seller"
+      : user?.role
+        ? `${user.role} account`
+        : null;
   const isApproved     = approvalStatus === "approved";
   const showVerifiedBadge = isSeller && (user?.is_verified || isApproved);
 
@@ -173,7 +190,9 @@ export default function DashboardPage() {
             <h1 className="text-xl font-semibold text-neutral-900">
               {user?.full_name?.split(" ")[0]}
             </h1>
-            <p className="text-neutral-500 text-sm mt-1 capitalize">{user?.role} account</p>
+            {overviewSubtitle && (
+              <p className="text-neutral-500 text-sm mt-1 capitalize">{overviewSubtitle}</p>
+            )}
           </div>
           {isSeller && isApproved && (
             <Link href="/dashboard/listings/new">
@@ -239,19 +258,24 @@ export default function DashboardPage() {
               Complete your seller profile
             </p>
             <p className="text-sm text-neutral-700 mb-3">
-              You need an approved dealer or private seller profile before you can list vehicles.
+              {isDealer
+                ? "You need an approved dealer profile before you can list vehicles."
+                : "You need an approved private seller profile before you can list vehicles."}
             </p>
             <div className="flex flex-wrap gap-2">
-              <Link href="/dealers/profile/new">
-                <Button variant="primary" size="sm">
-                  Create Dealer Profile
-                </Button>
-              </Link>
-              <Link href="/sellers/profile/new">
-                <Button variant="secondary" size="sm">
-                  Create Private Seller Profile
-                </Button>
-              </Link>
+              {isDealer ? (
+                <Link href="/dealers/profile/new">
+                  <Button variant="primary" size="sm">
+                    Create Dealer Profile
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/sellers/profile/new">
+                  <Button variant="primary" size="sm">
+                    Create Private Seller Profile
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

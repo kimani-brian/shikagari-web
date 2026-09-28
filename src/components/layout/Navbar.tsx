@@ -85,19 +85,6 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isLoggedIn ? (
               <>
-                <Link
-                  href="/dashboard/listings/new"
-                  className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 rounded-full",
-                    "text-sm font-medium text-neutral-900",
-                    "border border-neutral-300 bg-white",
-                    "hover:bg-neutral-50 transition-colors"
-                  )}
-                >
-                  <Icon name="add_circle" size={18} />
-                  Sell car
-                </Link>
-
                 <div className="relative" ref={dropRef}>
                   <button
                     onClick={() => setDropOpen((v) => !v)}
@@ -249,13 +236,6 @@ export default function Navbar() {
                   >
                     <Icon name="dashboard" size={18} />
                     Dashboard
-                  </Link>
-                  <Link
-                    href="/dashboard/listings/new"
-                    className="flex items-center gap-3 px-4 py-3 rounded-full text-sm font-medium text-white bg-neutral-900"
-                  >
-                    <Icon name="add_circle" size={18} className="text-white" />
-                    Sell car
                   </Link>
                   <button
                     onClick={logout}
