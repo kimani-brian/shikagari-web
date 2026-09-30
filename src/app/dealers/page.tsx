@@ -11,12 +11,6 @@ import { API_ORIGIN } from "@/lib/config";
 import Pagination from "@/components/ui/Pagination";
 import Skeleton from "@/components/ui/Skeleton";
 
-const HERO_STATS = [
-  { label: "Dealer groups", value: "180+" },
-  { label: "Cities covered", value: "32" },
-  { label: "Avg response", value: "6h" },
-];
-
 export default function DealersPage() {
   const [page, setPage] = useState(1);
   const { dealers, meta, loading, error, refetch } = useDealers(page, 12);
@@ -26,16 +20,11 @@ export default function DealersPage() {
       <section className="border-b border-neutral-200">
         <PageWrapper className="py-14 flex flex-col gap-8">
           <div className="max-w-3xl space-y-4">
-            <p className="text-xs font-medium text-neutral-500 flex items-center gap-2">
-              <Icon name="storefront" size={16} />
-              Dealer network
-            </p>
             <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-neutral-900">
-              Dealers across Kenya
+              Showrooms
             </h1>
             <p className="text-sm text-neutral-500 leading-relaxed">
-              Browse verified dealer showrooms. Each card shows the showroom details —
-              click to view all cars from that dealer.
+              Connect with verified car dealers across Kenya. Find your next car today.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/register">
@@ -43,21 +32,7 @@ export default function DealersPage() {
                   Become a dealer
                 </Button>
               </Link>
-              <Link href="/contact">
-                <Button variant="secondary" size="md">
-                  Talk to partnerships
-                </Button>
-              </Link>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {HERO_STATS.map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                <p className="text-xs font-medium text-neutral-500">{stat.label}</p>
-                <p className="text-xl font-semibold text-neutral-900 mt-1">{stat.value}</p>
-              </div>
-            ))}
           </div>
         </PageWrapper>
       </section>
@@ -67,11 +42,7 @@ export default function DealersPage() {
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <p className="text-xs font-medium text-neutral-500">Verified showrooms</p>
-              <h2 className="text-lg font-semibold text-neutral-900">Approved dealers</h2>
-              <p className="text-xs text-neutral-500 mt-1">
-                {meta ? `${meta.total_items.toLocaleString()} showroom${meta.total_items === 1 ? "" : "s"} approved` : "Tap a dealer to see their inventory."}
-              </p>
+              <h2 className="text-lg font-semibold text-neutral-900">Approved partners</h2>
             </div>
             <Button variant="secondary" onClick={refetch} className="w-full sm:w-auto">
               Refresh

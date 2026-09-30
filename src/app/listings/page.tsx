@@ -1,10 +1,12 @@
 "use client";
 
 import { Suspense, useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ListingFilters } from "@/types";
 import { useListings } from "@/hooks/useListings";
+import { useCompare } from "@/hooks/useCompare";
 import CarGrid from "@/components/cars/CarGrid";
 import CarCard from "@/components/cars/CarCard";
 import FilterSidebar from "@/components/search/FilterSidebar";
@@ -19,6 +21,7 @@ function parseFiltersFromURL(params: URLSearchParams): ListingFilters {
   return {
     search:       params.get("search")       || undefined,
     location:     params.get("location")     || undefined,
+    body_type:    params.get("body_type")    || undefined,
     make:         params.get("make")         || undefined,
     model:        params.get("model")        || undefined,
     min_year:     params.get("min_year")     ? Number(params.get("min_year"))  : undefined,
@@ -27,6 +30,8 @@ function parseFiltersFromURL(params: URLSearchParams): ListingFilters {
     max_price:    params.get("max_price")    ? Number(params.get("max_price")) : undefined,
     fuel_type:    (params.get("fuel_type")   as ListingFilters["fuel_type"])   || undefined,
     transmission: (params.get("transmission") as ListingFilters["transmission"]) || undefined,
+    drivetrain:   params.get("drivetrain")   || undefined,
+    doors:        params.get("doors")        ? Number(params.get("doors")) : undefined,
     seller_type:  (params.get("seller_type") as ListingFilters["seller_type"]) || undefined,
     dealer_id:    params.get("dealer_id")    || undefined,
     user_id:      params.get("user_id")      || undefined,
@@ -55,6 +60,7 @@ function ListingsPageInner() {
   );
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [viewMode,         setViewMode]         = useState<"grid" | "list">("grid");
+  const { count: compareCount } = useCompare();
 
   const { listings, meta, loading, error } = useListings(filters);
 
@@ -83,7 +89,7 @@ function ListingsPageInner() {
     <div className="min-h-screen bg-white">
 
       <div className="bg-white border-b border-neutral-200 sticky top-[var(--nav-height)] z-30">
-        <PageWrapper className="py-3">
+        <PageWrapper className="py-3 px-2 sm:px-3 lg:px-4" maxWidth="full">
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <SearchBar
@@ -111,11 +117,21 @@ function ListingsPageInner() {
               <ViewToggleBtn active={viewMode === "grid"} onClick={() => setViewMode("grid")} icon={<Icon name="grid_view" size={18} />} />
               <ViewToggleBtn active={viewMode === "list"} onClick={() => setViewMode("list")} icon={<Icon name="view_list" size={18} />} />
             </div>
+
+            {compareCount > 0 && (
+              <Link
+                href="/compare"
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-neutral-900 text-white hover:bg-black transition-colors shrink-0"
+              >
+                <Icon name="swap_horiz" size={16} className="text-white" />
+                Compare ({compareCount})
+              </Link>
+            )}
           </div>
         </PageWrapper>
       </div>
 
-      <PageWrapper className="py-6">
+      <PageWrapper className="py-6 px-2 sm:px-3 lg:px-4" maxWidth="full">
         <div className="flex gap-6">
 
           <FilterSidebar
@@ -129,23 +145,7 @@ function ListingsPageInner() {
           <div className="flex-1 min-w-0">
 
             <div className="flex items-center justify-between mb-5">
-              <div>
-                {!loading && (
-                  <p className="text-sm text-neutral-600">
-                    {meta?.total_items !== undefined ? (
-                      <>
-                        <span className="font-semibold text-neutral-900">
-                          {meta.total_items.toLocaleString()}
-                        </span>{" "}
-                        {meta.total_items === 1 ? "car" : "cars"} found
-                        {filters.location && (
-                          <span className="text-neutral-400"> in {filters.location}</span>
-                        )}
-                      </>
-                    ) : "Searching..."}
-                  </p>
-                )}
-              </div>
+              <div />
               <div className="flex items-center gap-2 lg:hidden">
                 <select
                   value={filters.sort_by ?? "newest"}
@@ -164,9 +164,12 @@ function ListingsPageInner() {
               <div className="flex flex-wrap gap-2 mb-5">
                 {filters.search      && <FilterPill label={`"${filters.search}"`}            onRemove={() => setFilters((p) => ({ ...p, search: undefined,       page: 1 }))} />}
                 {filters.location    && <FilterPill label={filters.location}                  onRemove={() => setFilters((p) => ({ ...p, location: undefined,     page: 1 }))} />}
+                {filters.body_type   && <FilterPill label={filters.body_type.split(",").join(" + ")} onRemove={() => setFilters((p) => ({ ...p, body_type: undefined,    page: 1 }))} />}
                 {filters.make        && <FilterPill label={filters.make}                      onRemove={() => setFilters((p) => ({ ...p, make: undefined,         page: 1 }))} />}
                 {filters.fuel_type   && <FilterPill label={filters.fuel_type}                 onRemove={() => setFilters((p) => ({ ...p, fuel_type: undefined,    page: 1 }))} />}
-                {filters.transmission && <FilterPill label={filters.transmission}             onRemove={() => setFilters((p) => ({ ...p, transmission: undefined, page: 1 }))} />}
+                {filters.transmission && <FilterPill label={filters.transmission}             onRemove={() => setFilters((p) => ({ ...p, transmission: undefined,  page: 1 }))} />}
+                {filters.drivetrain  && <FilterPill label={filters.drivetrain}                onRemove={() => setFilters((p) => ({ ...p, drivetrain: undefined,   page: 1 }))} />}
+                {filters.doors       && <FilterPill label={`${filters.doors} doors`}          onRemove={() => setFilters((p) => ({ ...p, doors: undefined,        page: 1 }))} />}
                 {filters.seller_type  && <FilterPill label={`${filters.seller_type} seller`}  onRemove={() => setFilters((p) => ({ ...p, seller_type: undefined,  page: 1 }))} />}
                 {(filters.min_price || filters.max_price) && (
                   <FilterPill

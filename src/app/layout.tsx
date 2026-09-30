@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CompareProvider } from "@/contexts/CompareContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -39,6 +40,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <AuthProvider>
+        <CompareProvider>
           {/* Toast notifications */}
           <Toaster
             position="top-right"
@@ -65,6 +67,7 @@ export default function RootLayout({
 
           {/* Footer */}
           <Footer />
+        </CompareProvider>
         </AuthProvider>
       </body>
     </html>

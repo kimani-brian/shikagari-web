@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, useRef, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useListing } from "@/hooks/useListings";
 import api from "@/lib/api";
@@ -9,24 +9,18 @@ import Button from "@/components/ui/Button";
 import { ListingStatusBadge } from "@/components/ui/Badge";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import toast from "react-hot-toast";
-import { ArrowLeft, AlertCircle, Car } from "lucide-react";
+import { ArrowLeft, AlertCircle, Car, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  VEHICLE_MAKES,
+  BODY_TYPES,
+  FUEL_TYPES,
+  TRANSMISSIONS,
+  DRIVETRAINS,
+} from "@/lib/vehicles";
+import { KENYAN_COUNTIES } from "@/lib/locations";
 
-const LOCATIONS = [
-  "Nairobi","Mombasa","Kisumu","Nakuru","Eldoret","Thika",
-  "Malindi","Nyeri","Machakos","Kisii","Kericho","Garissa",
-  "Meru","Kakamega","Other",
-];
-
-const MAKES = [
-  "Toyota","Nissan","Honda","Mazda","Subaru","Mitsubishi",
-  "Isuzu","Mercedes-Benz","BMW","Volkswagen","Ford",
-  "Hyundai","Kia","Land Rover","Jeep","Suzuki","Other",
-];
-
-const FUEL_TYPES    = ["petrol","diesel","hybrid","electric"];
-const TRANSMISSIONS = ["automatic","manual"];
 const STATUSES      = ["active","inactive","sold"];
 const CURRENT_YEAR  = new Date().getFullYear();
 const YEARS         = Array.from({ length: CURRENT_YEAR - 1989 }, (_, i) => CURRENT_YEAR - i);
@@ -34,38 +28,50 @@ const YEARS         = Array.from({ length: CURRENT_YEAR - 1989 }, (_, i) => CURR
 export default function EditListingPage() {
   const router      = useRouter();
   const { id }      = useParams<{ id: string }>();
-  const { listing, loading: listingLoading } = useListing(id);
+  const { listing, loading: listingLoading, refetch } = useListing(id);
 
-  const [title,        setTitle]        = useState("");
   const [description,  setDescription]  = useState("");
   const [priceKES,     setPriceKES]     = useState("");
   const [location,     setLocation]     = useState("");
+  const [bodyType,     setBodyType]     = useState("");
   const [make,         setMake]         = useState("");
   const [model,        setModel]        = useState("");
   const [year,         setYear]         = useState("");
   const [mileage,      setMileage]      = useState("");
   const [fuelType,     setFuelType]     = useState("petrol");
   const [transmission, setTransmission] = useState("automatic");
+  const [drivetrain,   setDrivetrain]   = useState("");
+  const [engineSize,   setEngineSize]   = useState("");
+  const [doors,        setDoors]        = useState("");
   const [color,        setColor]        = useState("");
   const [status,       setStatus]       = useState("active");
 
   const [errors,   setErrors]   = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState("");
   const [loading,  setLoading]  = useState(false);
+  const [imageFiles,    setImageFiles]    = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
-  // Populate form when listing loads
+  // Populate form when listing loads — only once. A late or duplicate fetch
+  // must never overwrite what the user has already typed.
+  const populated = useRef(false);
   useEffect(() => {
-    if (listing) {
-      setTitle(listing.title);
+    if (listing && !populated.current) {
+      populated.current = true;
       setDescription(listing.description ?? "");
       setPriceKES(String(listing.price_kes));
       setLocation(listing.location);
+      setBodyType(listing.body_type ?? "");
       setMake(listing.make);
       setModel(listing.model);
       setYear(String(listing.year));
       setMileage(String(listing.mileage));
       setFuelType(listing.fuel_type);
       setTransmission(listing.transmission);
+      setDrivetrain(listing.drivetrain ?? "");
+      setEngineSize(listing.engine_size ?? "");
+      setDoors(listing.doors ? String(listing.doors) : "");
       setColor(listing.color ?? "");
       setStatus(listing.status);
     }
@@ -85,16 +91,67 @@ export default function EditListingPage() {
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!title.trim() || title.trim().length < 5)
-      errs.title    = "Title must be at least 5 characters";
     if (!priceKES || isNaN(Number(priceKES)) || Number(priceKES) <= 0)
       errs.priceKES = "Enter a valid price";
     if (!location)
       errs.location = "Select a location";
+    if (!bodyType)
+      errs.bodyType = "Select a body type";
     if (!model.trim())
       errs.model    = "Enter the model";
     setErrors(errs);
     return Object.keys(errs).length === 0;
+  };
+
+  const existingCount = listing?.images?.length ?? 0;
+
+  // ── Multi-image handling ─────────────────────────────────────────────
+  const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (existingCount + imageFiles.length + files.length > 10) {
+      toast.error(`Maximum 10 photos per listing (${existingCount} already uploaded)`);
+      return;
+    }
+    const validFiles = files.filter((f) =>
+      ["image/jpeg","image/png","image/webp"].includes(f.type) && f.size <= 5 * 1024 * 1024
+    );
+    if (validFiles.length !== files.length) {
+      toast.error("Some files were skipped (must be JPEG/PNG/WebP, max 5MB each)");
+    }
+    setImageFiles((prev) => [...prev, ...validFiles]);
+    validFiles.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreviews((prev) => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(f);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles((prev)    => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpload = async () => {
+    if (imageFiles.length === 0) return;
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      imageFiles.forEach((file) => formData.append("images", file));
+      await api.post(`/listings/${id}/images`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Photos added successfully!");
+      setImageFiles([]);
+      setImagePreviews([]);
+      await refetch();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Failed to upload photos.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -105,16 +162,20 @@ export default function EditListingPage() {
     try {
       setLoading(true);
       await api.patch(`/listings/${id}`, {
-        title:        title.trim()       || undefined,
+        title:        `${year} ${make} ${model}`.trim(),
         description:  description.trim() || undefined,
         price_kes:    Number(priceKES),
         location,
+        body_type:    bodyType,
         make,
         model:        model.trim(),
         year:         Number(year),
         mileage:      Number(mileage),
         fuel_type:    fuelType,
         transmission,
+        drivetrain:   drivetrain || undefined,
+        engine_size:  engineSize.trim() || undefined,
+        doors:        doors ? Number(doors) : undefined,
         color:        color.trim() || undefined,
         status,
       });
@@ -165,13 +226,6 @@ export default function EditListingPage() {
                 <Car className="w-4 h-4 text-neutral-400" />
                 Basic Information
               </h3>
-              <Input
-                label="Listing Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                error={errors.title}
-                required
-              />
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Price (KES)"
@@ -187,7 +241,7 @@ export default function EditListingPage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   error={errors.location}
-                  options={LOCATIONS.map((l) => ({ value: l, label: l }))}
+                  options={KENYAN_COUNTIES.map((l) => ({ value: l, label: l }))}
                   required
                 />
               </div>
@@ -204,12 +258,22 @@ export default function EditListingPage() {
               <h3 className="font-display font-bold text-neutral-900">Vehicle Specifications</h3>
               <div className="grid grid-cols-2 gap-4">
                 <SelectField
+                  label="Body Type"
+                  value={bodyType}
+                  onChange={(e) => setBodyType(e.target.value)}
+                  error={errors.bodyType}
+                  options={BODY_TYPES.map((b) => ({ value: b, label: b }))}
+                  required
+                />
+                <SelectField
                   label="Make"
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
-                  options={MAKES.map((m) => ({ value: m, label: m }))}
+                  options={VEHICLE_MAKES.map((m) => ({ value: m, label: m }))}
                   required
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Model"
                   value={model}
@@ -217,6 +281,24 @@ export default function EditListingPage() {
                   error={errors.model}
                   required
                 />
+                <div>
+                  <label className="text-sm font-semibold text-neutral-700 block mb-2">Drivetrain</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {DRIVETRAINS.map((d) => (
+                      <button
+                        key={d} type="button" onClick={() => setDrivetrain(drivetrain === d ? "" : d)}
+                        className={cn(
+                          "py-2 rounded-xl text-xs font-semibold border transition-all",
+                          drivetrain === d
+                            ? "bg-neutral-900 text-white border-brand-700"
+                            : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300"
+                        )}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <SelectField
@@ -231,6 +313,21 @@ export default function EditListingPage() {
                   value={mileage}
                   onChange={(e) => setMileage(e.target.value)}
                   min={0}
+                />
+                <Input
+                  label="Engine size"
+                  value={engineSize}
+                  onChange={(e) => setEngineSize(e.target.value)}
+                  placeholder="e.g. 3.0L"
+                />
+                <Input
+                  label="Doors"
+                  type="number"
+                  value={doors}
+                  onChange={(e) => setDoors(e.target.value)}
+                  placeholder="e.g. 4"
+                  min={2}
+                  max={6}
                 />
                 <Input
                   label="Color"
@@ -310,15 +407,19 @@ export default function EditListingPage() {
               </p>
             </div>
 
-            {/* Current images */}
-            {listing.images && listing.images.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
-                <h3 className="font-display font-bold text-neutral-900 mb-3 text-sm">
-                  Current Photos ({listing.images.length})
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
+            {/* Photos: current + add more */}
+            <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
+              <h3 className="font-display font-bold text-neutral-900 mb-1 text-sm">
+                Photos ({existingCount + imageFiles.length} / 10)
+              </h3>
+              <p className="text-xs text-neutral-500 mb-4">
+                Select multiple photos at once. They upload alongside the existing ones.
+              </p>
+
+              {existingCount > 0 && (
+                <div className="grid grid-cols-3 gap-2 mb-3">
                   {listing.images.slice(0, 6).map((img, i) => (
-                    <div key={i} className="aspect-square rounded-xl overflow-hidden bg-neutral-100">
+                    <div key={`existing-${i}`} className="aspect-square rounded-xl overflow-hidden bg-neutral-100">
                       <img
                         src={img.startsWith("http") ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "")}${img}`}
                         alt={`Image ${i + 1}`}
@@ -327,11 +428,69 @@ export default function EditListingPage() {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-neutral-400 mt-2">
-                  To update photos, delete and re-create the listing.
-                </p>
-              </div>
-            )}
+              )}
+
+              <label className={cn(
+                "flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed cursor-pointer transition-all",
+                existingCount + imageFiles.length >= 10
+                  ? "border-neutral-200 bg-neutral-50 cursor-not-allowed"
+                  : "border-slate-300 hover:border-brand-400 hover:bg-neutral-50"
+              )}>
+                <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center">
+                  <Upload className="w-5 h-5 text-neutral-400" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-neutral-700">
+                    {existingCount + imageFiles.length >= 10 ? "Maximum reached" : "Add photos"}
+                  </p>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    Select multiple — JPEG, PNG, WebP, max 5MB each
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  onChange={handleImages}
+                  className="sr-only"
+                  disabled={existingCount + imageFiles.length >= 10}
+                />
+              </label>
+
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {imagePreviews.map((src, i) => (
+                    <div key={`new-${i}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                      <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-neutral-900 text-white text-[9px] font-bold rounded-md">
+                        New
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(i)}
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-neutral-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {imageFiles.length > 0 && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  fullWidth
+                  size="sm"
+                  loading={uploading}
+                  onClick={handleUpload}
+                  className="mt-3"
+                >
+                  Upload {imageFiles.length} photo{imageFiles.length === 1 ? "" : "s"}
+                </Button>
+              )}
+            </div>
 
             {/* Submit */}
             <Button type="submit" variant="primary" fullWidth size="lg" loading={loading}>

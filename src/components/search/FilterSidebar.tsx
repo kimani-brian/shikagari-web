@@ -5,21 +5,15 @@ import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { ListingFilters } from "@/types";
+import {
+  VEHICLE_MAKES,
+  BODY_TYPES,
+  FUEL_TYPES,
+  TRANSMISSIONS,
+  DRIVETRAINS,
+} from "@/lib/vehicles";
+import { KENYAN_COUNTIES } from "@/lib/locations";
 
-const LOCATIONS = [
-  "Nairobi","Mombasa","Kisumu","Nakuru","Eldoret",
-  "Thika","Malindi","Nyeri","Machakos","Kisii",
-  "Kericho","Garissa","Meru","Kakamega","Other",
-];
-
-const MAKES = [
-  "Toyota","Nissan","Honda","Mazda","Subaru","Mitsubishi",
-  "Isuzu","Mercedes-Benz","BMW","Volkswagen","Ford",
-  "Hyundai","Kia","Land Rover","Jeep",
-];
-
-const FUEL_TYPES    = ["petrol","diesel","hybrid","electric"];
-const TRANSMISSIONS = ["automatic","manual"];
 const SELLER_TYPES  = ["dealer","private"];
 
 const SORT_OPTIONS = [
@@ -99,7 +93,7 @@ export default function FilterSidebar({
         <FilterSection title="Location">
           <select value={local.location ?? ""} onChange={(e) => update("location", e.target.value)} className={selectCls}>
             <option value="">All locations</option>
-            {LOCATIONS.map((l) => <option key={l} value={l}>{l}</option>)}
+            {KENYAN_COUNTIES.map((l) => <option key={l} value={l}>{l}</option>)}
           </select>
         </FilterSection>
 
@@ -116,10 +110,18 @@ export default function FilterSidebar({
           </div>
         </FilterSection>
 
+        <FilterSection title="Body type">
+          <div className="flex flex-wrap gap-2">
+            {BODY_TYPES.map((b) => (
+              <PillToggle key={b} label={b} active={local.body_type === b} onClick={() => update("body_type", local.body_type === b ? undefined : b)} />
+            ))}
+          </div>
+        </FilterSection>
+
         <FilterSection title="Make">
           <select value={local.make ?? ""} onChange={(e) => update("make", e.target.value)} className={selectCls}>
             <option value="">All makes</option>
-            {MAKES.map((m) => <option key={m} value={m}>{m}</option>)}
+            {VEHICLE_MAKES.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </FilterSection>
 
@@ -158,6 +160,22 @@ export default function FilterSidebar({
           <div className="flex gap-2">
             {TRANSMISSIONS.map((t) => (
               <PillToggle key={t} label={t.charAt(0).toUpperCase() + t.slice(1)} active={local.transmission === t} onClick={() => update("transmission", local.transmission === t ? undefined : t)} className="flex-1 justify-center" />
+            ))}
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Drivetrain">
+          <div className="flex gap-2">
+            {DRIVETRAINS.map((d) => (
+              <PillToggle key={d} label={d} active={local.drivetrain === d} onClick={() => update("drivetrain", local.drivetrain === d ? undefined : d)} className="flex-1 justify-center" />
+            ))}
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Doors">
+          <div className="flex gap-2">
+            {[2, 3, 4, 5].map((d) => (
+              <PillToggle key={d} label={String(d)} active={local.doors === d} onClick={() => update("doors", local.doors === d ? undefined : d)} className="flex-1 justify-center" />
             ))}
           </div>
         </FilterSection>

@@ -45,13 +45,14 @@ export default function CarGrid({
       {listings.map((listing, i) => (
         <div
           key={listing.id}
-          className="animate-fade-up"
+          className="animate-fade-up h-full"
           style={{ animationDelay: `${Math.min(i * 50, 400)}ms` }}
         >
           <CarCard
             listing={listing}
             isFavorited={favoritedIds.has(listing.id)}
             onFavoriteToggle={onFavoriteToggle}
+            className="h-full"
           />
         </div>
       ))}

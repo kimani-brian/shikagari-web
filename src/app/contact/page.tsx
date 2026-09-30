@@ -79,7 +79,7 @@ export default function ContactPage() {
             </p>
             <Link href="/listings" className="inline-flex mt-4">
               <Button variant="primary" size="md">
-                Browse cars
+                Vehicles
               </Button>
             </Link>
           </div>

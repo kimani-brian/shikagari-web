@@ -13,21 +13,17 @@ import Input, { SelectField, Textarea } from "@/components/ui/Input";
 import toast from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { ListingCard, PrivateSellerProfile } from "@/types";
-
-const BODY_TYPES = [
-  { label: "Sedan", query: "Sedan" },
-  { label: "SUV", query: "SUV" },
-  { label: "Pickup", query: "Pickup" },
-  { label: "Hatchback", query: "Hatchback" },
-  { label: "Van", query: "Van" },
-  { label: "Wagon", query: "Station Wagon" },
-  { label: "Coupe", query: "Coupe" },
-  { label: "Convertible", query: "Convertible" },
-  { label: "Crossover", query: "Crossover" },
-  { label: "EV", query: "EV" },
-  { label: "Minivan", query: "Minivan" },
-  { label: "Sports", query: "Sports" },
-];
+import { BODY_TYPES } from "@/lib/vehicles";
+import Reveal from "@/components/shared/Reveal";
+import {
+  Users,
+  Mountain,
+  CarTaxiFront,
+  Gem,
+  Zap,
+  Bike,
+  ArrowUpRight,
+} from "lucide-react";
 
 const MAKES = [
   { name: "Toyota", logo: "https://www.carlogos.org/car-logos/toyota-logo.png" },
@@ -37,7 +33,7 @@ const MAKES = [
   { name: "Honda", logo: "https://www.carlogos.org/car-logos/honda-logo.png" },
   { name: "Tesla", logo: "https://www.carlogos.org/car-logos/tesla-logo-2007.png" },
   { name: "Isuzu", logo: "https://www.carlogos.org/car-logos/isuzu-logo.png" },
-  { name: "Mercedes", logo: "https://www.carlogos.org/car-logos/mercedes-benz-logo.png" },
+  { name: "Mercedes-Benz", logo: "https://www.carlogos.org/car-logos/mercedes-benz-logo.png" },
   // second row
   { name: "Volkswagen", logo: "https://www.carlogos.org/car-logos/volkswagen-logo.png" },
   { name: "BMW", logo: "https://www.carlogos.org/car-logos/bmw-logo.png" },
@@ -88,7 +84,59 @@ const ACCOUNT_TYPES = [
   },
 ];
 
-const CITIES = ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika", "Malindi", "Nyeri"];
+const CATEGORIES = [
+  {
+    title: "Family",
+    desc: "Roomy rides for the whole crew.",
+    href: "/listings?body_type=Van,SUV",
+    icon: Users,
+  },
+  {
+    title: "Off-road",
+    desc: "SUVs and pickups built for upcountry trips.",
+    href: "/listings?body_type=SUV,Pickup",
+    icon: Mountain,
+  },
+  {
+    title: "Uber",
+    desc: "Fuel sippers that earn from day one.",
+    href: "/listings?body_type=Sedan",
+    icon: CarTaxiFront,
+  },
+  {
+    title: "Luxury",
+    desc: "Executive rides with all the extras.",
+    href: "/listings?sort_by=price_desc",
+    icon: Gem,
+  },
+  {
+    title: "Sports cars",
+    desc: "Coupes with pace and presence.",
+    href: "/listings?body_type=Coupe",
+    icon: Zap,
+  },
+  {
+    title: "Bikes",
+    desc: "Two wheelers for beating traffic.",
+    href: "/listings?search=Bike",
+    icon: Bike,
+  },
+];
+
+const COMPARE_POINTS = [
+  {
+    title: "Shortlist up to 4 cars",
+    desc: "Tap the compare button on any listing to add it to your shortlist.",
+  },
+  {
+    title: "See everything together",
+    desc: "Price, year, mileage, fuel and more in one clear table.",
+  },
+  {
+    title: "Spot the better deal",
+    desc: "Scan across the row and pick your winner with confidence.",
+  },
+];
 
 const SELLER_LOCATIONS = [
   "Nairobi",
@@ -234,45 +282,17 @@ export default function HomePage() {
       {/* Steps */}
       <section className="border-b border-neutral-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {STEPS.map((item) => (
-              <div
-                key={item.title}
-                className="flex gap-3 py-2"
-              >
-                <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center shrink-0">
-                  <Icon name={item.icon} size={18} className="text-white" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {STEPS.map((item, i) => (
+              <Reveal key={item.title} delay={Math.min(i * 90, 270)} className="h-full">
+                <div className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center shrink-0 mb-4">
+                    <Icon name={item.icon} size={18} className="text-white" />
+                  </div>
+                  <p className="text-base font-semibold text-neutral-900">{item.title}</p>
+                  <p className="text-sm text-neutral-500 leading-relaxed mt-1.5">{item.desc}</p>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-neutral-900">{item.title}</h3>
-                  <p className="text-xs text-neutral-500 leading-relaxed mt-1">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Browse by type */}
-      <section className="py-10 border-b border-neutral-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-6">
-            <h2 className="text-base font-semibold text-neutral-900">Browse by type</h2>
-            <Link href="/listings" className="text-xs font-medium text-neutral-600 hover:text-neutral-900 flex items-center gap-1">
-              View all <Icon name="chevron_right" size={16} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            {BODY_TYPES.map((cat) => (
-              <Link
-                key={cat.label}
-                href={`/listings?search=${encodeURIComponent(cat.query)}`}
-                className="group flex items-center justify-center py-6 px-3 rounded-xl border border-neutral-200 hover:border-neutral-900 bg-white transition-colors"
-              >
-                <span className="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 text-center">
-                  {cat.label}
-                </span>
-              </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -282,7 +302,7 @@ export default function HomePage() {
       <section className="py-10 bg-neutral-50 border-b border-neutral-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-6">
-            <h2 className="text-base font-semibold text-neutral-900">Latest listings</h2>
+            <h2 className="text-base font-semibold text-neutral-900">Latest</h2>
             <Link
               href="/listings"
               className="hidden sm:flex items-center gap-1 text-xs font-medium text-neutral-600 hover:text-neutral-900"
@@ -307,22 +327,86 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Categories */}
+      <section className="py-10 border-b border-neutral-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-4 mb-6">
+            <h2 className="text-lg font-semibold text-neutral-900">Whatever moves you.</h2>
+            <p className="text-xs text-neutral-400 text-right hidden sm:block">
+              City streets or open roads. There is a car for every chapter.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {CATEGORIES.map((cat, i) => {
+              const CatIcon = cat.icon;
+              return (
+                <Reveal key={cat.title} delay={Math.min(i * 70, 350)} className="h-full">
+                  <Link
+                    href={cat.href}
+                    className="group flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <span className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center shadow-card">
+                        <CatIcon className="w-5 h-5 text-white" strokeWidth={1.75} />
+                      </span>
+                      <ArrowUpRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-900 transition-colors" />
+                    </div>
+                    <p className="text-base font-semibold text-neutral-900">{cat.title}</p>
+                    <p className="text-xs text-neutral-500 leading-relaxed mt-1 mb-4">{cat.desc}</p>
+                    <span className="mt-auto inline-flex items-center gap-1 text-xs font-semibold text-neutral-900">
+                      Explore category
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </span>
+                  </Link>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Browse by type */}
+      <section className="py-10 border-b border-neutral-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-6">
+            <h2 className="text-base font-semibold text-neutral-900">Browse by type</h2>
+            <Link href="/listings" className="text-xs font-medium text-neutral-600 hover:text-neutral-900 flex items-center gap-1">
+              View all <Icon name="chevron_right" size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {BODY_TYPES.map((bodyType, i) => (
+              <Reveal key={bodyType} delay={Math.min(i * 60, 420)} className="h-full">
+                <Link
+                  href={`/listings?body_type=${encodeURIComponent(bodyType)}`}
+                  className="group flex items-center justify-center py-6 px-3 rounded-xl border border-neutral-200 hover:border-neutral-900 hover:-translate-y-0.5 hover:shadow-card bg-white transition-all duration-200 h-full"
+                >
+                  <span className="text-sm font-medium text-neutral-700 group-hover:text-neutral-900 text-center">
+                    {bodyType}
+                  </span>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Browse by make */}
       <section className="py-10 border-b border-neutral-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-6">
-            <h2 className="text-base font-semibold text-neutral-900">Browse by make</h2>
+            <h2 className="text-base font-semibold text-neutral-900">Start with a name you know.</h2>
             <Link href="/listings" className="text-xs font-medium text-neutral-600 hover:text-neutral-900 flex items-center gap-1">
               View all <Icon name="chevron_right" size={16} />
             </Link>
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-            {MAKES.map((make) => (
-              <Link
-                key={make.name}
-                href={`/listings?make=${encodeURIComponent(make.name)}`}
-                className="group flex flex-col items-center gap-2 py-5 px-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-900 transition-colors"
-              >
+            {MAKES.map((make, i) => (
+              <Reveal key={make.name} delay={Math.min(i * 40, 400)} className="h-full">
+                <Link
+                  href={`/listings?make=${encodeURIComponent(make.name)}`}
+                  className="group flex flex-col items-center gap-2 py-5 px-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-900 hover:-translate-y-0.5 hover:shadow-card transition-all duration-200 h-full"
+                >
                 <span className="w-12 h-12 flex items-center justify-center bg-white rounded-lg overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -338,30 +422,8 @@ export default function HomePage() {
                 <span className="text-xs font-medium text-neutral-700 group-hover:text-neutral-900 text-center">
                   {make.name}
                 </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Browse by location */}
-      <section className="py-10 border-b border-neutral-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-base font-semibold text-neutral-900 mb-2">Browse by location</h2>
-          <p className="text-xs text-neutral-500 mb-6">Find cars near you</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {CITIES.map((city) => (
-              <Link
-                key={city}
-                href={`/listings?location=${city}`}
-                className="flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-900 transition-colors group"
-              >
-                <span className="flex items-center gap-2 text-sm font-medium text-neutral-700 group-hover:text-neutral-900">
-                  <Icon name="location_on" size={18} className="text-neutral-400 group-hover:text-neutral-700" />
-                  {city}
-                </span>
-                <Icon name="chevron_right" size={16} className="text-neutral-300 group-hover:text-neutral-700" />
-              </Link>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -372,11 +434,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-lg font-semibold text-neutral-900 mb-6">Pick the account that fits you</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {ACCOUNT_TYPES.map((account) => (
-              <div
-                key={account.title}
-                className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6"
-              >
+            {ACCOUNT_TYPES.map((account, i) => (
+              <Reveal key={account.title} delay={Math.min(i * 90, 270)} className="h-full">
+                <div className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200"
+                >
                 <p className="text-base font-semibold text-neutral-900">{account.title}</p>
                 <p className="text-sm text-neutral-500 leading-relaxed mt-1.5 mb-5">{account.desc}</p>
                 <Link
@@ -386,7 +447,33 @@ export default function HomePage() {
                   {account.cta} <Icon name="arrow_forward" size={16} />
                 </Link>
               </div>
+              </Reveal>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Compare feature */}
+      <section className="py-10 border-b border-neutral-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-6">Compare cars side by side</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {COMPARE_POINTS.map((point, i) => (
+              <Reveal key={point.title} delay={Math.min(i * 90, 270)} className="h-full">
+                <div className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200">
+                  <p className="text-base font-semibold text-neutral-900">{point.title}</p>
+                  <p className="text-sm text-neutral-500 leading-relaxed mt-1.5">{point.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <div className="mt-6">
+            <Link
+              href="/compare"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-900 hover:underline"
+            >
+              Try it now <Icon name="arrow_forward" size={16} />
+            </Link>
           </div>
         </div>
       </section>

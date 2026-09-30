@@ -33,6 +33,13 @@ export default function CarDetailPage() {
   const [sending, setSending] = useState(false);
   const [inquirySent, setInquirySent] = useState(false);
 
+  const DEFAULT_MESSAGE = "Hi, is this car still available? Can we arrange a viewing?";
+
+  const openInquiry = () => {
+    if (!message.trim()) setMessage(DEFAULT_MESSAGE);
+    setInquiryOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white py-8">
@@ -128,8 +135,10 @@ export default function CarDetailPage() {
     { icon: "speed" as const, label: "Mileage", value: formatMileage(listing.mileage) },
     { icon: "local_gas_station" as const, label: "Fuel", value: listing.fuel_type.charAt(0).toUpperCase() + listing.fuel_type.slice(1) },
     { icon: "settings" as const, label: "Transmission", value: listing.transmission.charAt(0).toUpperCase() + listing.transmission.slice(1) },
+    { icon: "bolt" as const, label: "Engine", value: listing.engine_size || "Not specified" },
+    { icon: "directions_car" as const, label: "Doors", value: listing.doors ? String(listing.doors) : "Not specified" },
     { icon: "palette" as const, label: "Color", value: listing.color || "Not specified" },
-    { icon: "storefront" as const, label: "Seller", value: listing.seller_type === "dealer" ? "Dealer" : "Private seller" },
+    { icon: "settings" as const, label: "Drive", value: listing.drivetrain || "Not specified" },
   ];
 
   return (
@@ -149,6 +158,52 @@ export default function CarDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
+            <div className="bg-white rounded-xl p-6 border border-neutral-200">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 leading-tight">
+                    {listing.title}
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={handleFavorite}
+                    disabled={toggling}
+                    className={cn(
+                      "w-9 h-9 rounded-full flex items-center justify-center border transition-colors",
+                      isFavorited
+                        ? "bg-neutral-900 border-neutral-900 text-white"
+                        : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900"
+                    )}
+                  >
+                    <Icon name="favorite" size={18} filled={isFavorited} />
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="w-9 h-9 rounded-full flex items-center justify-center border border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
+                  >
+                    <Icon name="share" size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xl font-semibold text-neutral-900 mb-3">{formatKES(listing.price_kes)}</p>
+
+              <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-500">
+                <span className="flex items-center gap-1.5">
+                  <Icon name="location_on" size={16} className="text-neutral-400" />
+                  {listing.location}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                <span className="flex items-center gap-1.5">
+                  <Icon name="visibility" size={16} className="text-neutral-400" />
+                  {listing.view_count} views
+                </span>
+                <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                <span>Listed {timeAgo(listing.created_at)}</span>
+              </div>
+            </div>
+
             <div className="bg-white rounded-xl overflow-hidden border border-neutral-200">
               <div
                 className="relative h-64 sm:h-80 md:h-[420px] bg-neutral-100 cursor-pointer group"
@@ -159,6 +214,7 @@ export default function CarDetailPage() {
                     src={resolveUrl(images[activeImg])}
                     alt={listing.title}
                     fill
+                    unoptimized
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 66vw"
                     priority
@@ -217,6 +273,7 @@ export default function CarDetailPage() {
                         src={resolveUrl(img)}
                         alt={`${listing.title} image ${i + 1}`}
                         fill
+                        unoptimized
                         className="object-cover"
                         sizes="64px"
                       />
@@ -226,56 +283,48 @@ export default function CarDetailPage() {
               )}
             </div>
 
+          </div>
+
+          <div className="space-y-4">
             <div className="bg-white rounded-xl p-6 border border-neutral-200">
-              <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center shrink-0 overflow-hidden">
+                  {sellerPhoto ? (
+                    <Image
+                      src={resolveUrl(sellerPhoto)}
+                      alt={sellerName}
+                      width={48}
+                      height={48}
+                      unoptimized
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-white">{sellerName[0]?.toUpperCase()}</span>
+                  )}
+                </div>
                 <div>
-                  <p className="text-xs text-neutral-500 capitalize">{listing.seller_type} seller</p>
-                  <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 leading-tight mt-1">
-                    {listing.title}
-                  </h1>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={handleFavorite}
-                    disabled={toggling}
-                    className={cn(
-                      "w-9 h-9 rounded-full flex items-center justify-center border transition-colors",
-                      isFavorited
-                        ? "bg-neutral-900 border-neutral-900 text-white"
-                        : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900"
-                    )}
-                  >
-                    <Icon name="favorite" size={18} filled={isFavorited} />
-                  </button>
-                  <button
-                    onClick={handleShare}
-                    className="w-9 h-9 rounded-full flex items-center justify-center border border-neutral-200 text-neutral-500 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
-                  >
-                    <Icon name="share" size={18} />
-                  </button>
+                  <p className="text-sm font-medium text-neutral-900">{sellerName}</p>
+                  <p className="text-xs text-neutral-500 capitalize">
+                    {listing.seller_type === "dealer" ? "Dealer" : "Private seller"}
+                  </p>
                 </div>
               </div>
 
-              <p className="text-xl font-semibold text-neutral-900 mb-3">{formatKES(listing.price_kes)}</p>
-
-              <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-500">
-                <span className="flex items-center gap-1.5">
-                  <Icon name="location_on" size={16} className="text-neutral-400" />
-                  {listing.location}
-                </span>
-                <span className="w-1 h-1 rounded-full bg-neutral-300" />
-                <span className="flex items-center gap-1.5">
-                  <Icon name="visibility" size={16} className="text-neutral-400" />
-                  {listing.view_count} views
-                </span>
-                <span className="w-1 h-1 rounded-full bg-neutral-300" />
-                <span>Listed {timeAgo(listing.created_at)}</span>
-              </div>
+              {inquirySent ? (
+                <div className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-neutral-700 text-sm">
+                  <Icon name="check_circle" size={18} />
+                  Message sent
+                </div>
+              ) : (
+                <Button variant="primary" fullWidth leftIcon={<Icon name="chat_bubble" size={18} />} onClick={openInquiry}>
+                  Send inquiry
+                </Button>
+              )}
             </div>
 
             <div className="bg-white rounded-xl p-6 border border-neutral-200">
               <h2 className="text-sm font-semibold text-neutral-900 mb-4">Specifications</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {SPECS.map((spec) => (
                   <div key={spec.label} className="flex flex-col gap-1.5 p-3 bg-neutral-50 rounded-xl border border-neutral-200">
                     <div className="flex items-center gap-2 text-neutral-400">
@@ -296,71 +345,6 @@ export default function CarDetailPage() {
                 </p>
               </div>
             )}
-          </div>
-
-          <div className="space-y-4">
-            <div className="bg-white rounded-xl p-6 border border-neutral-200">
-              <h3 className="text-xs font-medium text-neutral-500 tracking-wide mb-4">Seller</h3>
-
-              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-neutral-200">
-                <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center shrink-0 overflow-hidden">
-                  {sellerPhoto ? (
-                    <Image
-                      src={resolveUrl(sellerPhoto)}
-                      alt={sellerName}
-                      width={48}
-                      height={48}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    <span className="text-sm font-medium text-white">{sellerName[0]?.toUpperCase()}</span>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">{sellerName}</p>
-                  <p className="text-xs text-neutral-500 capitalize">
-                    {listing.seller_type === "dealer" ? "Dealer" : "Private seller"}
-                  </p>
-                </div>
-              </div>
-
-              <a
-                href={`tel:${listing.seller.phone}`}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full border border-neutral-900 bg-white text-neutral-900 font-medium text-sm hover:bg-neutral-50 transition-colors mb-3"
-              >
-                <Icon name="phone" size={18} />
-                {listing.seller.phone}
-              </a>
-
-              {inquirySent ? (
-                <div className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-neutral-700 text-sm">
-                  <Icon name="check_circle" size={18} />
-                  Message sent
-                </div>
-              ) : (
-                <Button variant="primary" fullWidth leftIcon={<Icon name="chat_bubble" size={18} />} onClick={() => setInquiryOpen(true)}>
-                  Send message
-                </Button>
-              )}
-
-              <div className="mt-4 flex items-start gap-2 text-xs text-neutral-500">
-                <Icon name="info" size={16} className="text-neutral-400 mt-0.5 shrink-0" />
-                <p>Meet in a public place. Do not transfer money before viewing the vehicle.</p>
-              </div>
-            </div>
-
-            <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon name="warning" size={16} className="text-neutral-600" />
-                <span className="text-xs font-medium text-neutral-900">Safety tips</span>
-              </div>
-              <ul className="text-xs text-neutral-600 space-y-1.5 list-disc list-inside">
-                <li>Inspect the vehicle in person</li>
-                <li>Check logbook and records</li>
-                <li>Use a trusted mechanic</li>
-                <li>Do not pay in full before delivery</li>
-              </ul>
-            </div>
           </div>
         </div>
       </PageWrapper>
@@ -390,13 +374,12 @@ export default function CarDetailPage() {
 
             <div className="p-5">
               <label className="text-sm font-medium text-neutral-700 block mb-2">
-                Your message
+                Message
               </label>
               <textarea
                 rows={4}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Hi, is this car still available? Can we arrange a viewing?"
                 className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 resize-none"
               />
               <p className="text-xs text-neutral-400 mt-1.5 text-right">{message.length} / 1000</p>
@@ -439,6 +422,7 @@ export default function CarDetailPage() {
               alt={listing.title}
               width={1200}
               height={800}
+              unoptimized
               className="object-contain w-full max-h-[85vh] rounded-xl"
             />
           </div>

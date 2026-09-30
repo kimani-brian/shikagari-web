@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import Icon from "@/components/ui/Icon";
 
 const NAV_LINKS = [
-  { label: "Browse cars", href: "/listings" },
-  { label: "Dealers", href: "/dealers" },
+  { label: "Vehicles", href: "/listings" },
+  { label: "Showrooms", href: "/dealers" },
   { label: "About", href: "/about" },
 ];
 

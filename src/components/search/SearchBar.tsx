@@ -5,36 +5,8 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
-
-const CITIES = [
-  "All Locations",
-  "Nairobi",
-  "Mombasa",
-  "Kisumu",
-  "Nakuru",
-  "Eldoret",
-  "Thika",
-  "Malindi",
-  "Nyeri",
-  "Machakos",
-  "Kisii",
-  "Kericho",
-  "Garissa",
-  "Meru",
-  "Kakamega",
-];
-
-const BODY_TYPES = [
-  "All Types",
-  "Sedan",
-  "SUV",
-  "Hatchback",
-  "Pickup",
-  "Van",
-  "Coupe",
-  "Convertible",
-  "Station Wagon",
-];
+import { BODY_TYPES } from "@/lib/vehicles";
+import { KENYAN_COUNTIES } from "@/lib/locations";
 
 interface SearchBarProps {
   variant?: "hero" | "compact";
@@ -56,9 +28,8 @@ export default function SearchBar({
     e.preventDefault();
     const params = new URLSearchParams();
     if (query.trim()) params.set("search", query.trim());
-    if (location && location !== "All Locations") params.set("location", location);
-    if (type && type !== "All Types")
-      params.set("search", `${params.get("search") ?? ""} ${type}`.trim());
+    if (location) params.set("location", location);
+    if (type) params.set("body_type", type);
     router.push(`/listings?${params.toString()}`);
   };
 
@@ -93,9 +64,10 @@ export default function SearchBar({
             onChange={(e) => setLocation(e.target.value)}
             className="flex-1 bg-transparent text-sm text-neutral-700 outline-none appearance-none cursor-pointer pr-6"
           >
-            {CITIES.map((city) => (
-              <option key={city} value={city === "All Locations" ? "" : city}>
-                {city}
+            <option value="">All Locations</option>
+            {KENYAN_COUNTIES.map((county) => (
+              <option key={county} value={county}>
+                {county}
               </option>
             ))}
           </select>
@@ -114,8 +86,9 @@ export default function SearchBar({
             onChange={(e) => setType(e.target.value)}
             className="flex-1 bg-transparent text-sm text-neutral-700 outline-none appearance-none cursor-pointer pr-6"
           >
+            <option value="">All Types</option>
             {BODY_TYPES.map((t) => (
-              <option key={t} value={t === "All Types" ? "" : t}>
+              <option key={t} value={t}>
                 {t}
               </option>
             ))}

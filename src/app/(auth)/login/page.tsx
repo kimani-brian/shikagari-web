@@ -114,7 +114,7 @@ export default function LoginPage() {
 
         <Link href="/listings">
           <Button variant="secondary" fullWidth size="lg">
-            Browse cars without signing in
+            Browse vehicles without signing in
           </Button>
         </Link>
 

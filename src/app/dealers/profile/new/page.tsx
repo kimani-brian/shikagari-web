@@ -12,7 +12,7 @@ import { ApprovalBadge } from "@/components/ui/Badge";
 import { DealerProfile, ApprovalStatus } from "@/types";
 import { KENYAN_COUNTIES } from "@/lib/locations";
 import { toast } from "react-hot-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
 import { DEALER_PROFILE_UPDATED_EVENT } from "@/hooks/useMyDealerProfile";
 
 interface DealerForm {
@@ -35,7 +35,6 @@ export default function DealerProfileForm() {
   const { user, isLoggedIn, isLoading, refreshUser } = useAuth();
   const [form, setForm] = useState<DealerForm>(DEFAULT_FORM);
   const [savedForm, setSavedForm] = useState<DealerForm>(DEFAULT_FORM);
-  const [accountName, setAccountName] = useState("");
   const [accountEmail, setAccountEmail] = useState("");
   const [accountPhone, setAccountPhone] = useState("");
   const accountTouched = useRef(false);
@@ -45,13 +44,14 @@ export default function DealerProfileForm() {
   // Save is only enabled when something differs from the last saved state.
   const isAccountDirty =
     accountTouched.current &&
-    (accountName.trim() !== (user?.full_name ?? "").trim() ||
-      accountEmail.trim() !== (user?.email ?? "").trim() ||
+    (accountEmail.trim() !== (user?.email ?? "").trim() ||
       accountPhone.trim() !== (user?.phone ?? "").trim());
   const isDirty = JSON.stringify(form) !== JSON.stringify(savedForm) || isAccountDirty;
   const [fetching, setFetching] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   // Dealer accounts manage this page; legacy seller accounts keep access to
   // their existing profiles (the API strictly enforces dealer role on create).
@@ -100,7 +100,6 @@ export default function DealerProfileForm() {
   // Pre-fill account fields from the signed-in user (until the user edits them).
   useEffect(() => {
     if (!accountTouched.current && user) {
-      setAccountName(user.full_name ?? "");
       setAccountEmail(user.email ?? "");
       setAccountPhone(user.phone ?? "");
     }
@@ -108,6 +107,25 @@ export default function DealerProfileForm() {
 
   const handleChange = (field: keyof DealerForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      toast.error("Logo must be JPEG, PNG, or WebP under 5MB");
+      return;
+    }
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogoFile = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -121,7 +139,6 @@ export default function DealerProfileForm() {
       // Save account name/email/phone first so everything stays in sync.
       if (isAccountDirty) {
         await api.patch("/users/me", {
-          full_name: accountName.trim() || undefined,
           email: accountEmail.trim() && accountEmail.trim() !== (user?.email ?? "") ? accountEmail.trim() : undefined,
           phone: accountPhone.trim() || undefined,
         });
@@ -139,6 +156,22 @@ export default function DealerProfileForm() {
             : "Dealer profile updated"
         );
         window.dispatchEvent(new Event(DEALER_PROFILE_UPDATED_EVENT));
+      }
+      // Upload a selected logo file after the profile exists, so the
+      // returned URL is saved on the profile in one go. A logo failure
+      // must not block the profile save already completed above.
+      if (logoFile) {
+        try {
+          const logoData = new FormData();
+          logoData.append("logo", logoFile);
+          await api.post("/dealers/profile/logo", logoData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          toast.success("Logo uploaded successfully!");
+          removeLogoFile();
+        } catch {
+          toast.error("Profile saved, but logo upload failed. Please try again.");
+        }
       }
       await loadProfile();
     } catch (err: any) {
@@ -226,16 +259,6 @@ export default function DealerProfileForm() {
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Input
-            label="Full name"
-            value={accountName}
-            onChange={(e) => {
-              accountTouched.current = true;
-              setAccountName(e.target.value);
-            }}
-            placeholder="Your full name"
-            required
-          />
-          <Input
             label="Email address"
             type="email"
             value={accountEmail}
@@ -281,7 +304,45 @@ export default function DealerProfileForm() {
           value={form.logo_url}
           onChange={(e) => handleChange("logo_url", e.target.value)}
           placeholder="https://..."
+          hint="Paste a logo link, or upload an image below"
         />
+
+        <div>
+          <label className="text-sm font-medium text-neutral-700 block mb-2">
+            Upload logo
+          </label>
+          {logoPreview ? (
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-neutral-50">
+              <img
+                src={logoPreview}
+                alt="Logo preview"
+                className="w-12 h-12 rounded-lg object-cover bg-white border border-neutral-200"
+              />
+              <p className="text-xs text-neutral-500 flex-1">
+                Logo ready — it uploads when you save.
+              </p>
+              <button
+                type="button"
+                onClick={removeLogoFile}
+                className="w-7 h-7 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-500 hover:text-neutral-900 hover:border-neutral-900 transition-colors"
+                aria-label="Remove logo"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-300 cursor-pointer hover:border-brand-400 hover:bg-neutral-50 transition-all text-sm font-medium text-neutral-600">
+              <Upload className="w-4 h-4 text-neutral-400" />
+              Choose image (JPEG, PNG, WebP, max 5MB)
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleLogoFile}
+                className="sr-only"
+              />
+            </label>
+          )}
+        </div>
 
         <Textarea
           label="Description"

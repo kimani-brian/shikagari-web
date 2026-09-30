@@ -93,12 +93,18 @@ export interface ListingCard {
   title:         string;
   price_kes:     number;
   location:      string;
+  body_type:     string;
+  status:        ListingStatus;
   make:          string;
   model:         string;
   year:          number;
   mileage:       number;
   fuel_type:     FuelType;
   transmission:  Transmission;
+  drivetrain:    string;
+  engine_size:   string;
+  doors:         number;
+  color:         string;
   thumbnail_url: string;
   seller_type:   SellerType;
   is_verified:   boolean;
@@ -111,6 +117,7 @@ export interface ListingDetail {
   description:   string;
   price_kes:     number;
   location:      string;
+  body_type:     string;
   status:        ListingStatus;
   seller_type:   SellerType;
   make:          string;
@@ -119,6 +126,9 @@ export interface ListingDetail {
   mileage:       number;
   fuel_type:     FuelType;
   transmission:  Transmission;
+  drivetrain:    string;
+  engine_size:   string;
+  doors:         number;
   color:         string;
   images:        string[];
   view_count:    number;
@@ -140,6 +150,7 @@ export interface PrivateSellerSummary {
 export interface ListingFilters {
   search?:       string;
   location?:     string;
+  body_type?:    string;
   make?:         string;
   model?:        string;
   min_year?:     number;
@@ -148,6 +159,8 @@ export interface ListingFilters {
   max_price?:    number;
   fuel_type?:    FuelType;
   transmission?: Transmission;
+  drivetrain?:   string;
+  doors?:        number;
   seller_type?:  SellerType;
   dealer_id?:    string;
   user_id?:      string;

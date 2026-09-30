@@ -441,7 +441,7 @@ export default function DashboardPage() {
               <Car className="w-6 h-6 text-neutral-700" />
             </div>
             <div>
-              <p className="font-semibold text-neutral-900">Browse Cars</p>
+              <p className="font-semibold text-neutral-900">Vehicles</p>
               <p className="text-sm text-neutral-500">12,000+ listings available</p>
             </div>
             <ArrowRight className="w-5 h-5 text-slate-300 ml-auto" />

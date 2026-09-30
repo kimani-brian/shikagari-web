@@ -15,7 +15,7 @@ const PLANS = [
     price: "Free",
     copy: "Search, filter, and contact sellers at no cost.",
     features: ["Unlimited browsing", "Direct seller contact", "Saved cars"],
-    cta: { label: "Browse cars", href: "/listings" },
+    cta: { label: "Vehicles", href: "/listings" },
   },
   {
     name: "Private sellers",

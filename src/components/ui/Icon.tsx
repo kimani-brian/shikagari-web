@@ -50,7 +50,8 @@ type IconName =
   | "payments"
   | "handshake"
   | "storefront"
-  | "store";
+  | "store"
+  | "swap_horiz";
 
 interface IconProps {
   name: IconName;

@@ -10,51 +10,50 @@ import toast from "react-hot-toast";
 import { ArrowLeft, Upload, X, Car, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  VEHICLE_MAKES,
+  BODY_TYPES,
+  FUEL_TYPES,
+  TRANSMISSIONS,
+  DRIVETRAINS,
+} from "@/lib/vehicles";
+import { KENYAN_COUNTIES } from "@/lib/locations";
 
 // ── Form options ───────────────────────────────────────────────────────────────
-const LOCATIONS = [
-  "Nairobi","Mombasa","Kisumu","Nakuru","Eldoret","Thika",
-  "Malindi","Nyeri","Machakos","Kisii","Kericho","Garissa",
-  "Meru","Kakamega","Other",
-];
-
-const MAKES = [
-  "Toyota","Nissan","Honda","Mazda","Subaru","Mitsubishi",
-  "Isuzu","Mercedes-Benz","BMW","Volkswagen","Ford",
-  "Hyundai","Kia","Land Rover","Jeep","Suzuki","Peugeot",
-  "Renault","Audi","Other",
-];
-
-const FUEL_TYPES    = ["petrol","diesel","hybrid","electric"];
-const TRANSMISSIONS = ["automatic","manual"];
 const CURRENT_YEAR  = new Date().getFullYear();
 const YEARS         = Array.from({ length: CURRENT_YEAR - 1989 }, (_, i) => CURRENT_YEAR - i);
 
 interface FormData {
-  title:        string;
   description:  string;
   price_kes:    string;
   location:     string;
+  body_type:    string;
   make:         string;
   model:        string;
   year:         string;
   mileage:      string;
   fuel_type:    string;
   transmission: string;
+  drivetrain:   string;
+  engine_size:  string;
+  doors:        string;
   color:        string;
 }
 
 const EMPTY_FORM: FormData = {
-  title:        "",
   description:  "",
   price_kes:    "",
   location:     "",
+  body_type:    "",
   make:         "",
   model:        "",
   year:         String(CURRENT_YEAR),
   mileage:      "",
   fuel_type:    "petrol",
   transmission: "automatic",
+  drivetrain:   "",
+  engine_size:  "",
+  doors:        "",
   color:        "",
 };
 
@@ -78,6 +77,7 @@ export default function NewListingPage() {
   // ── Image handling ─────────────────────────────────────────────────────
   const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
     if (imageFiles.length + files.length > 10) {
       toast.error("Maximum 10 images allowed");
       return;
@@ -106,11 +106,10 @@ export default function NewListingPage() {
   // ── Validation ─────────────────────────────────────────────────────────
   const validateStep1 = (): boolean => {
     const errs: Partial<FormData> = {};
-    if (!form.title.trim()    || form.title.trim().length < 5)
-      errs.title    = "Title must be at least 5 characters";
     if (!form.price_kes || isNaN(Number(form.price_kes)) || Number(form.price_kes) <= 0)
       errs.price_kes = "Enter a valid price";
     if (!form.location)       errs.location     = "Select a location";
+    if (!form.body_type)      errs.body_type    = "Select a body type";
     if (!form.make)           errs.make         = "Select a make";
     if (!form.model.trim())   errs.model        = "Enter the model";
     if (!form.mileage || isNaN(Number(form.mileage)) || Number(form.mileage) < 0)
@@ -128,18 +127,23 @@ export default function NewListingPage() {
     try {
       setLoading(true);
 
-      // 1. Create the listing
+      // 1. Create the listing (title is generated from year/make/model)
+      const generatedTitle = `${form.year} ${form.make} ${form.model}`.trim();
       const res = await api.post("/listings", {
-        title:        form.title.trim(),
+        title:        generatedTitle,
         description:  form.description.trim(),
         price_kes:    Number(form.price_kes),
         location:     form.location,
+        body_type:    form.body_type,
         make:         form.make,
         model:        form.model.trim(),
         year:         Number(form.year),
         mileage:      Number(form.mileage),
         fuel_type:    form.fuel_type,
         transmission: form.transmission,
+        drivetrain:   form.drivetrain || undefined,
+        engine_size:  form.engine_size.trim() || undefined,
+        doors:        form.doors ? Number(form.doors) : undefined,
         color:        form.color.trim(),
       });
 
@@ -197,15 +201,6 @@ export default function NewListingPage() {
 
             {/* Basic info */}
             <FormSection title="Basic Information" icon={<Car className="w-4 h-4" />}>
-              <Input
-                label="Listing Title"
-                placeholder='e.g. "2019 Toyota Premio – One Owner, Low Mileage"'
-                value={form.title}
-                onChange={(e) => set("title", e.target.value)}
-                error={errors.title}
-                required
-              />
-
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Price (KES)"
@@ -223,8 +218,8 @@ export default function NewListingPage() {
                   value={form.location}
                   onChange={(e) => set("location", e.target.value)}
                   error={errors.location}
-                  options={LOCATIONS.map((l) => ({ value: l, label: l }))}
-                  placeholder="Select city"
+                  options={KENYAN_COUNTIES.map((l) => ({ value: l, label: l }))}
+                  placeholder="Select county"
                   required
                 />
               </div>
@@ -243,14 +238,26 @@ export default function NewListingPage() {
             <FormSection title="Vehicle Specifications" icon={<Car className="w-4 h-4" />}>
               <div className="grid grid-cols-2 gap-4">
                 <SelectField
+                  label="Body Type"
+                  value={form.body_type}
+                  onChange={(e) => set("body_type", e.target.value)}
+                  error={errors.body_type}
+                  options={BODY_TYPES.map((b) => ({ value: b, label: b }))}
+                  placeholder="Select body type"
+                  required
+                />
+                <SelectField
                   label="Make"
                   value={form.make}
                   onChange={(e) => set("make", e.target.value)}
                   error={errors.make}
-                  options={MAKES.map((m) => ({ value: m, label: m }))}
+                  options={VEHICLE_MAKES.map((m) => ({ value: m, label: m }))}
                   placeholder="Select make"
                   required
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Model"
                   placeholder='e.g. "Premio", "Fielder"'
@@ -259,6 +266,28 @@ export default function NewListingPage() {
                   error={errors.model}
                   required
                 />
+                <div>
+                  <label className="text-sm font-semibold text-neutral-700 block mb-2">
+                    Drivetrain
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {DRIVETRAINS.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => set("drivetrain", form.drivetrain === d ? "" : d)}
+                        className={cn(
+                          "py-2.5 rounded-xl text-xs font-semibold border transition-all",
+                          form.drivetrain === d
+                            ? "bg-neutral-900 text-white border-brand-700"
+                            : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300"
+                        )}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -278,6 +307,21 @@ export default function NewListingPage() {
                   error={errors.mileage}
                   required
                   min={0}
+                />
+                <Input
+                  label="Engine size"
+                  placeholder="e.g. 3.0L"
+                  value={form.engine_size}
+                  onChange={(e) => set("engine_size", e.target.value)}
+                />
+                <Input
+                  label="Doors"
+                  type="number"
+                  placeholder="e.g. 4"
+                  value={form.doors}
+                  onChange={(e) => set("doors", e.target.value)}
+                  min={2}
+                  max={6}
                 />
                 <Input
                   label="Color"
@@ -408,9 +452,10 @@ export default function NewListingPage() {
             <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
               <h3 className="font-display font-bold text-neutral-900 mb-3 text-sm">Listing Summary</h3>
               <div className="space-y-2 text-sm">
-                <SummaryRow label="Title"    value={form.title    || "—"} />
+                <SummaryRow label="Title"    value={`${form.year} ${form.make} ${form.model}`.trim() || "—"} />
                 <SummaryRow label="Make"     value={form.make     || "—"} />
                 <SummaryRow label="Model"    value={form.model    || "—"} />
+                <SummaryRow label="Body"     value={form.body_type || "—"} />
                 <SummaryRow label="Year"     value={form.year     || "—"} />
                 <SummaryRow label="Price"    value={form.price_kes ? `KES ${Number(form.price_kes).toLocaleString()}` : "—"} />
                 <SummaryRow label="Location" value={form.location || "—"} />

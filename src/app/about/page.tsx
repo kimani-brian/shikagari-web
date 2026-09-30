@@ -69,7 +69,7 @@ export default function AboutPage() {
             <div className="flex flex-wrap gap-3 mt-6">
               <Link href="/listings">
                 <Button variant="primary" size="md">
-                  Browse cars
+                  Vehicles
                 </Button>
               </Link>
               <Link href="/register">

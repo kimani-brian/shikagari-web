@@ -59,7 +59,10 @@ function RegisterForm() {
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!fullName.trim() || fullName.trim().length < 2) errs.fullName = "Full name must be at least 2 characters";
+    if (!fullName.trim() || fullName.trim().length < 2)
+      errs.fullName = role === "dealer"
+        ? "Dealer name must be at least 2 characters"
+        : "Full name must be at least 2 characters";
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Please enter a valid email";
     if (!phone.trim() || phone.trim().length < 10) errs.phone = "Please enter a valid phone number";
     if (password.length < 8) errs.password = "Password must be at least 8 characters";
@@ -197,15 +200,15 @@ function RegisterForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Full name"
+            label={role === "dealer" ? "Dealer name" : "Full name"}
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="John Kamau"
+            placeholder={role === "dealer" ? "Shika Motors Ltd" : "John Kamau"}
             leftIcon={<Icon name="person" size={18} />}
             error={errors.fullName}
             required
-            autoComplete="name"
+            autoComplete={role === "dealer" ? "organization" : "name"}
           />
 
           <Input
