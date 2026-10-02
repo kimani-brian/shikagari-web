@@ -49,17 +49,17 @@ export default function Navbar() {
       <header
         className={cn(
           "fixed top-0 left-0 right-0 z-50 h-[var(--nav-height)]",
-          "bg-white",
+          "bg-neutral-900",
           "transition-shadow duration-200",
-          scrolled ? "shadow-nav" : "border-b border-neutral-200"
+          scrolled ? "shadow-nav" : "border-b border-neutral-800"
         )}
       >
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 flex items-center justify-center">
-              <Icon name="directions_car" size={18} className="text-white" />
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+              <Icon name="directions_car" size={18} className="text-neutral-900" />
             </div>
-            <span className="font-semibold text-lg text-neutral-900 tracking-tight">
+            <span className="font-semibold text-lg text-white tracking-tight">
               ShikaGari
             </span>
           </Link>
@@ -72,8 +72,8 @@ export default function Navbar() {
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-medium transition-colors",
                     isActive(link.href)
-                      ? "bg-neutral-900 text-white"
-                      : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
+                      ? "bg-white text-neutral-900"
+                      : "text-white hover:bg-white/10"
                   )}
                 >
                   {link.label}
@@ -90,21 +90,21 @@ export default function Navbar() {
                     onClick={() => setDropOpen((v) => !v)}
                     className={cn(
                       "flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full",
-                      "border border-neutral-200 bg-white",
-                      "hover:border-neutral-300 hover:bg-neutral-50 transition-colors",
-                      dropOpen && "border-neutral-900 bg-neutral-50"
+                      "border border-white/15 bg-transparent",
+                      "hover:bg-white/10 transition-colors",
+                      dropOpen && "bg-white/10"
                     )}
                   >
-                    <div className="w-7 h-7 rounded-full bg-neutral-900 flex items-center justify-center">
-                      <span className="text-white text-xs font-medium">
+                    <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center">
+                      <span className="text-neutral-900 text-xs font-medium">
                         {user?.full_name?.[0]?.toUpperCase() ?? "U"}
                       </span>
                     </div>
                     <div className="text-left">
-                      <p className="text-xs font-medium text-neutral-900 leading-none">
+                      <p className="text-xs font-medium text-white leading-none">
                         {user?.full_name?.split(" ")[0]}
                       </p>
-                      <p className="text-[10px] text-neutral-500 leading-none mt-0.5 capitalize">
+                      <p className="text-[10px] text-neutral-400 leading-none mt-0.5 capitalize">
                         {user?.role}
                       </p>
                     </div>
@@ -112,7 +112,7 @@ export default function Navbar() {
                       name="chevron_down"
                       size={18}
                       className={cn(
-                        "text-neutral-400 transition-transform",
+                        "text-neutral-500 transition-transform",
                         dropOpen && "rotate-180"
                       )}
                     />
@@ -163,7 +163,7 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium text-neutral-700 hover:text-neutral-900 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
                 >
                   Sign in
                 </Link>
@@ -171,8 +171,8 @@ export default function Navbar() {
                   href="/register"
                   className={cn(
                     "px-5 py-2.5 rounded-full text-sm font-medium",
-                    "bg-neutral-900 text-white",
-                    "hover:bg-black",
+                    "bg-white text-neutral-900",
+                    "hover:bg-neutral-200",
                     "transition-colors duration-150"
                   )}
                 >
@@ -184,7 +184,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="md:hidden p-2 rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="md:hidden p-2 rounded-full text-neutral-300 hover:bg-white/10 transition-colors"
             aria-label="Toggle menu"
           >
             <Icon name={menuOpen ? "close" : "menu"} size={22} />
@@ -195,10 +195,10 @@ export default function Navbar() {
       {menuOpen && (
         <div className={cn("fixed inset-0 z-40 md:hidden", "pt-[var(--nav-height)]")}>
           <div
-            className="absolute inset-0 bg-neutral-900/20"
+            className="absolute inset-0 bg-neutral-900/60"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="relative bg-white border-b border-neutral-200">
+          <div className="relative bg-neutral-900 border-b border-neutral-800">
             <div className="px-4 py-4 space-y-1">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -207,8 +207,8 @@ export default function Navbar() {
                   className={cn(
                     "flex items-center px-4 py-3 rounded-xl text-sm font-medium",
                     isActive(link.href)
-                      ? "bg-neutral-900 text-white"
-                      : "text-neutral-700 hover:bg-neutral-50"
+                      ? "bg-white text-neutral-900"
+                      : "text-white hover:bg-white/10"
                   )}
                 >
                   {link.label}
@@ -216,30 +216,30 @@ export default function Navbar() {
               ))}
             </div>
 
-            <div className="px-4 pb-4 pt-2 border-t border-neutral-100">
+            <div className="px-4 pb-4 pt-2 border-t border-neutral-800">
               {isLoggedIn ? (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3 px-4 py-3 bg-neutral-50 rounded-xl border border-neutral-200">
-                    <div className="w-9 h-9 rounded-full bg-neutral-900 flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
+                    <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center">
+                      <span className="text-neutral-900 text-sm font-medium">
                         {user?.full_name?.[0]?.toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-900">{user?.full_name}</p>
-                      <p className="text-xs text-neutral-500 capitalize">{user?.role}</p>
+                      <p className="text-sm font-medium text-white">{user?.full_name}</p>
+                      <p className="text-xs text-neutral-400 capitalize">{user?.role}</p>
                     </div>
                   </div>
                   <Link
                     href="/dashboard"
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white hover:bg-white/10"
                   >
                     <Icon name="dashboard" size={18} />
                     Dashboard
                   </Link>
                   <button
                     onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white hover:bg-white/10"
                   >
                     <Icon name="logout" size={18} />
                     Sign out
@@ -249,13 +249,13 @@ export default function Navbar() {
                 <div className="grid grid-cols-2 gap-3">
                   <Link
                     href="/login"
-                    className="py-3 rounded-full text-sm font-medium text-neutral-700 border border-neutral-300 text-center hover:bg-neutral-50"
+                    className="py-3 rounded-full text-sm font-medium text-white border border-white/20 text-center hover:bg-white/10"
                   >
                     Sign in
                   </Link>
                   <Link
                     href="/register"
-                    className="py-3 rounded-full text-sm font-medium text-white bg-neutral-900 text-center hover:bg-black"
+                    className="py-3 rounded-full text-sm font-medium text-neutral-900 bg-white text-center hover:bg-neutral-200"
                   >
                     Get started
                   </Link>

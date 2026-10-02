@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { BODY_TYPES } from "@/lib/vehicles";
-import { KENYAN_COUNTIES } from "@/lib/locations";
 
 interface SearchBarProps {
   variant?: "hero" | "compact";
@@ -21,14 +20,14 @@ export default function SearchBar({
 }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState(initialValues?.query ?? "");
-  const [location, setLocation] = useState(initialValues?.location ?? "");
   const [type, setType] = useState("");
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
     if (query.trim()) params.set("search", query.trim());
-    if (location) params.set("location", location);
+    // A location passed in (e.g. from a county link) is preserved
+    if (initialValues?.location) params.set("location", initialValues.location);
     if (type) params.set("body_type", type);
     router.push(`/listings?${params.toString()}`);
   };
@@ -52,29 +51,6 @@ export default function SearchBar({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search make, model, or keyword"
             className="flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 outline-none"
-          />
-        </div>
-
-        <div className="hidden sm:block w-px bg-neutral-200 self-stretch my-2" />
-
-        <div className="relative flex items-center gap-2 px-3 py-2 min-w-[160px]">
-          <Icon name="location_on" size={18} className="text-neutral-400 shrink-0" />
-          <select
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-neutral-700 outline-none appearance-none cursor-pointer pr-6"
-          >
-            <option value="">All Locations</option>
-            {KENYAN_COUNTIES.map((county) => (
-              <option key={county} value={county}>
-                {county}
-              </option>
-            ))}
-          </select>
-          <Icon
-            name="expand_more"
-            size={18}
-            className="text-neutral-400 pointer-events-none absolute right-2"
           />
         </div>
 

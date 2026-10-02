@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import SearchBar from "@/components/search/SearchBar";
+import { cn } from "@/lib/utils";import SearchBar from "@/components/search/SearchBar";
 import CarCard from "@/components/cars/CarCard";
 import { CarCardSkeleton } from "@/components/ui/Skeleton";
 import Button from "@/components/ui/Button";
@@ -156,6 +155,38 @@ const SELLER_LOCATIONS = [
   "Other",
 ].map((city) => ({ value: city, label: city }));
 
+// SectionEdge paints a curved top or bottom edge on the dark bands so they
+// flow into the neighbouring white/gray sections instead of butting against
+// them. `tone` is the colour of the adjacent section. The top and bottom
+// curves use different shapes so the band does not look mirrored.
+const WAVE_TOP =
+  "M0,74 C260,44 500,102 740,72 C980,42 1220,100 1440,66 L1440,120 L0,120 Z";
+const WAVE_BOTTOM =
+  "M0,0 L1440,0 L1440,68 C1240,12 1010,108 700,56 C410,8 190,112 0,50 Z";
+
+function SectionEdge({
+  tone,
+  variant,
+}: {
+  tone: "white" | "muted";
+  variant: "top" | "bottom";
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        "absolute inset-x-0 h-14 sm:h-24 pointer-events-none z-10",
+        variant === "bottom" ? "bottom-0" : "top-0",
+        tone === "white" ? "bg-white" : "bg-neutral-50"
+      )}
+    >
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="h-full w-full">
+        <path fill="#171717" d={variant === "bottom" ? WAVE_BOTTOM : WAVE_TOP} />
+      </svg>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const { user } = useAuth();
   const [featured, setFeatured] = useState<ListingCard[]>([]);
@@ -250,20 +281,20 @@ export default function HomePage() {
     <div className="bg-white">
       {/* Hero */}
       <section className="border-b border-neutral-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 sm:py-36 lg:py-48">
           <div className="max-w-3xl mx-auto">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-neutral-900 text-center">
               Find cars for sale in Kenya
             </h1>
             <p className="text-sm sm:text-base text-neutral-500 text-center mt-3">
-              Search listings from dealers and private sellers
+              Search vehicles from dealers and private sellers
             </p>
 
-            <div className="mt-8">
+            <div className="mt-12">
               <SearchBar variant="hero" />
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
               <span className="text-xs text-neutral-400">Popular</span>
               {["Toyota Premio", "Nissan X Trail", "Subaru Forester", "Toyota Fielder"].map((q) => (
                 <Link
@@ -279,30 +310,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Steps */}
-      <section className="border-b border-neutral-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {STEPS.map((item, i) => (
-              <Reveal key={item.title} delay={Math.min(i * 90, 270)} className="h-full">
-                <div className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200">
-                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center shrink-0 mb-4">
-                    <Icon name={item.icon} size={18} className="text-white" />
-                  </div>
-                  <p className="text-base font-semibold text-neutral-900">{item.title}</p>
-                  <p className="text-sm text-neutral-500 leading-relaxed mt-1.5">{item.desc}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Latest listings */}
-      <section className="py-10 bg-neutral-50 border-b border-neutral-200">
+      <section className="py-12 sm:py-16 bg-neutral-50 border-b border-neutral-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-6">
-            <h2 className="text-base font-semibold text-neutral-900">Latest</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">Latest</h2>
             <Link
               href="/listings"
               className="hidden sm:flex items-center gap-1 text-xs font-medium text-neutral-600 hover:text-neutral-900"
@@ -328,48 +340,50 @@ export default function HomePage() {
       </section>
 
       {/* Categories */}
-      <section className="py-10 border-b border-neutral-200">
+      <section className="relative pt-28 pb-28 sm:pt-40 sm:pb-40 bg-neutral-900">
+        <SectionEdge tone="muted" variant="top" />
+        <SectionEdge tone="white" variant="bottom" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between gap-4 mb-6">
-            <h2 className="text-lg font-semibold text-neutral-900">Whatever moves you.</h2>
-            <p className="text-xs text-neutral-400 text-right hidden sm:block">
+            <h2 className="text-lg font-semibold text-white">Whatever moves you.</h2>
+            <p className="text-xs text-neutral-500 text-right hidden sm:block">
               City streets or open roads. There is a car for every chapter.
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {CATEGORIES.map((cat, i) => {
-              const CatIcon = cat.icon;
-              return (
-                <Reveal key={cat.title} delay={Math.min(i * 70, 350)} className="h-full">
-                  <Link
-                    href={cat.href}
-                    className="group flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <span className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center shadow-card">
-                        <CatIcon className="w-5 h-5 text-white" strokeWidth={1.75} />
-                      </span>
-                      <ArrowUpRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-900 transition-colors" />
-                    </div>
-                    <p className="text-base font-semibold text-neutral-900">{cat.title}</p>
-                    <p className="text-xs text-neutral-500 leading-relaxed mt-1 mb-4">{cat.desc}</p>
-                    <span className="mt-auto inline-flex items-center gap-1 text-xs font-semibold text-neutral-900">
-                      Explore category
-                      <ArrowUpRight className="w-3.5 h-3.5" />
+          <div className="grid sm:grid-cols-2 gap-x-8 lg:gap-x-12">
+            {CATEGORIES.map((cat, i) => (
+              <Reveal key={cat.title} delay={Math.min(i * 70, 350)}>
+                <Link
+                  href={cat.href}
+                  className="group flex items-center gap-5 sm:gap-6 py-5 border-b border-white/10 transition-colors duration-200 hover:bg-white/[0.04]"
+                >
+                  <span className="w-11 h-11 rounded-full bg-black border border-white/15 flex items-center justify-center shrink-0 transition-colors duration-200 group-hover:border-white/40">
+                    <cat.icon className="w-5 h-5 text-white" strokeWidth={1.75} />
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-base font-semibold text-white">
+                      {cat.title}
                     </span>
-                  </Link>
-                </Reveal>
-              );
-            })}
+                    <span className="block text-xs text-neutral-400 leading-relaxed mt-0.5">
+                      {cat.desc}
+                    </span>
+                  </span>
+
+                  <ArrowUpRight className="w-4 h-4 text-neutral-500 group-hover:text-white shrink-0 transition-colors duration-200" />
+                </Link>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Browse by type */}
-      <section className="py-10 border-b border-neutral-200">
+      {/* Browse facets: body type + makes */}
+      <section className="py-12 sm:py-16 border-b border-neutral-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Body types */}
           <div className="flex items-end justify-between mb-6">
-            <h2 className="text-base font-semibold text-neutral-900">Browse by type</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">Browse by type</h2>
             <Link href="/listings" className="text-xs font-medium text-neutral-600 hover:text-neutral-900 flex items-center gap-1">
               View all <Icon name="chevron_right" size={16} />
             </Link>
@@ -388,14 +402,10 @@ export default function HomePage() {
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Browse by make */}
-      <section className="py-10 border-b border-neutral-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-6">
-            <h2 className="text-base font-semibold text-neutral-900">Start with a name you know.</h2>
+          {/* Makes */}
+          <div className="flex items-end justify-between mt-12 mb-6">
+            <h2 className="text-lg font-semibold text-neutral-900">Start with a name you know.</h2>
             <Link href="/listings" className="text-xs font-medium text-neutral-600 hover:text-neutral-900 flex items-center gap-1">
               View all <Icon name="chevron_right" size={16} />
             </Link>
@@ -407,21 +417,21 @@ export default function HomePage() {
                   href={`/listings?make=${encodeURIComponent(make.name)}`}
                   className="group flex flex-col items-center gap-2 py-5 px-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-900 hover:-translate-y-0.5 hover:shadow-card transition-all duration-200 h-full"
                 >
-                <span className="w-12 h-12 flex items-center justify-center bg-white rounded-lg overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={make.logo}
-                    alt={`${make.name} logo`}
-                    className="w-10 h-10 object-contain"
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                </span>
-                <span className="text-xs font-medium text-neutral-700 group-hover:text-neutral-900 text-center">
-                  {make.name}
-                </span>
+                  <span className="w-12 h-12 flex items-center justify-center bg-white rounded-lg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={make.logo}
+                      alt={`${make.name} logo`}
+                      className="w-10 h-10 object-contain"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </span>
+                  <span className="text-xs font-medium text-neutral-700 group-hover:text-neutral-900 text-center">
+                    {make.name}
+                  </span>
                 </Link>
               </Reveal>
             ))}
@@ -429,58 +439,111 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Account types */}
-      <section className="py-10 border-b border-neutral-200">
+      {/* Steps */}
+      <section className="py-12 sm:py-16 bg-neutral-50 border-b border-neutral-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-6">Pick the account that fits you</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {ACCOUNT_TYPES.map((account, i) => (
-              <Reveal key={account.title} delay={Math.min(i * 90, 270)} className="h-full">
-                <div className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200"
-                >
-                <p className="text-base font-semibold text-neutral-900">{account.title}</p>
-                <p className="text-sm text-neutral-500 leading-relaxed mt-1.5 mb-5">{account.desc}</p>
-                <Link
-                  href={account.href}
-                  className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-neutral-900 hover:underline"
-                >
-                  {account.cta} <Icon name="arrow_forward" size={16} />
-                </Link>
-              </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Compare feature */}
-      <section className="py-10 border-b border-neutral-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-6">Compare cars side by side</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {COMPARE_POINTS.map((point, i) => (
-              <Reveal key={point.title} delay={Math.min(i * 90, 270)} className="h-full">
-                <div className="flex flex-col rounded-xl border border-neutral-200 bg-white p-6 h-full hover:border-neutral-900 hover:-translate-y-1 hover:shadow-card transition-all duration-200">
-                  <p className="text-base font-semibold text-neutral-900">{point.title}</p>
-                  <p className="text-sm text-neutral-500 leading-relaxed mt-1.5">{point.desc}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
+            {STEPS.map((item, i) => (
+              <Reveal key={item.title} delay={Math.min(i * 90, 270)} className="h-full">
+                <div className="relative flex h-full flex-col items-center text-center">
+                  {/* Connector between steps */}
+                  {i < STEPS.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="hidden sm:block absolute top-6 left-1/2 h-px w-[calc(100%+1.5rem)] bg-neutral-200"
+                    />
+                  )}
+                  <span className="relative w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center shrink-0">
+                    <Icon name={item.icon} size={20} className="text-white" />
+                  </span>
+                  <p className="text-base font-semibold text-neutral-900 mt-4">{item.title}</p>
+                  <p className="text-sm text-neutral-500 leading-relaxed mt-1.5 max-w-xs">{item.desc}</p>
                 </div>
               </Reveal>
             ))}
           </div>
-          <div className="mt-6">
+        </div>
+      </section>
+
+      {/* Compare feature — dark editorial band, no cards */}
+      <section className="relative pt-28 pb-28 sm:pt-40 sm:pb-40 bg-neutral-900">
+        <SectionEdge tone="muted" variant="top" />
+        <SectionEdge tone="white" variant="bottom" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-4 mb-10">
+            <h2 className="text-lg font-semibold text-white">Compare cars side by side</h2>
             <Link
               href="/compare"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-900 hover:underline"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-neutral-900 text-xs font-medium hover:bg-neutral-200 transition-colors duration-150"
             >
-              Try it now <Icon name="arrow_forward" size={16} />
+              Compare
             </Link>
+          </div>
+
+          <div className="relative grid sm:grid-cols-3">
+            {/* Column rules drawn explicitly so they always render */}
+            <span aria-hidden="true" className="hidden sm:block absolute inset-y-0 left-0 w-px bg-white/25" />
+            <span aria-hidden="true" className="hidden sm:block absolute inset-y-0 left-1/3 w-px bg-white/25" />
+            <span aria-hidden="true" className="hidden sm:block absolute inset-y-0 left-2/3 w-px bg-white/25" />
+            {COMPARE_POINTS.map((point, i) => (
+              <Reveal key={point.title} delay={Math.min(i * 90, 270)} className="h-full">
+                <div
+                  className={cn(
+                    "h-full py-6 sm:py-0 sm:px-6",
+                    i > 0 && "border-t border-white/15 sm:border-t-0"
+                  )}
+                >
+                  <span className="text-xs font-medium tracking-[0.2em] text-neutral-500">
+                    0{i + 1}
+                  </span>
+                  <p className="text-base font-semibold text-white mt-3">{point.title}</p>
+                  <p className="text-sm text-neutral-400 leading-relaxed mt-1.5">{point.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Account types — full-width rows, no cards */}
+      <section className="py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-8">Pick the account that fits you</h2>
+
+          <div className="border-t border-neutral-200">
+            {ACCOUNT_TYPES.map((account, i) => (
+              <Reveal key={account.title} delay={Math.min(i * 80, 240)}>
+                <Link
+                  href={account.href}
+                  className="group flex items-center gap-5 sm:gap-8 px-2 sm:px-4 py-6 border-b border-neutral-200 transition-colors duration-200 hover:bg-neutral-50"
+                >
+                  <span className="hidden sm:block w-10 h-10 rounded-full border border-neutral-200 group-hover:border-neutral-900 group-hover:bg-neutral-900 flex items-center justify-center shrink-0 transition-colors duration-200">
+                    <span className="text-xs font-medium text-neutral-500 group-hover:text-white transition-colors duration-200">
+                      0{i + 1}
+                    </span>
+                  </span>
+                  <span className="text-xs font-medium tracking-[0.2em] text-neutral-400 shrink-0 sm:hidden">
+                    0{i + 1}
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-base font-semibold text-neutral-900">
+                      {account.title}
+                    </span>
+                    <span className="block text-sm text-neutral-500 leading-relaxed mt-1 max-w-2xl">
+                      {account.desc}
+                    </span>
+                  </span>
+                </Link>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Seller section for buyers */}
       {isBuyer && (
-        <section className="py-10 bg-neutral-50">
+        <section className="py-12 sm:py-16 bg-neutral-50 border-t border-neutral-200">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto">
               <div className="bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8">

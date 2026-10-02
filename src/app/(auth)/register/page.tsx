@@ -261,17 +261,6 @@ function RegisterForm() {
             autoComplete="new-password"
           />
 
-          {role !== "buyer" && (
-            <div className="flex items-start gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-600">
-              <Icon name="info" size={18} className="shrink-0 mt-0.5" />
-              <p>
-                {role === "dealer"
-                  ? "After registering, you will create a dealer profile with your business details. Admin approval is required before listing."
-                  : "After registering, you will create a private seller profile with your ID details. Admin approval is required before listing."}
-              </p>
-            </div>
-          )}
-
           <Button type="submit" variant="primary" fullWidth size="lg" loading={loading} className="mt-2">
             Create account
           </Button>

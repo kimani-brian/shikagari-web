@@ -23,9 +23,6 @@ export default function DealersPage() {
             <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-neutral-900">
               Showrooms
             </h1>
-            <p className="text-sm text-neutral-500 leading-relaxed">
-              Connect with verified car dealers across Kenya. Find your next car today.
-            </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/register">
                 <Button variant="primary" size="md">
@@ -86,20 +83,6 @@ export default function DealersPage() {
           <FeatureCard icon="chat_bubble" title="Direct leads" copy="Buyers contact you directly to ask questions and arrange viewing." />
         </section>
 
-        <section className="bg-neutral-50 rounded-xl border border-neutral-200 p-6 flex flex-col gap-4">
-          <h3 className="text-base font-semibold text-neutral-900">Show your inventory</h3>
-          <p className="text-sm text-neutral-500 max-w-3xl">
-            Publish listings and manage inquiries. Dealer onboarding is completed after document review.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/register">
-              <Button variant="primary">Start selling</Button>
-            </Link>
-            <Link href="/contact">
-              <Button variant="secondary">Book a demo</Button>
-            </Link>
-          </div>
-        </section>
       </PageWrapper>
     </div>
   );
