@@ -97,6 +97,8 @@ export interface ListingCard {
   cover_image?:  string;   // seller-chosen card photo
   seller_type:   SellerType;
   is_verified:   boolean;
+  // Byline on the card: dealership name, or "Private listing" for individuals
+  seller_label?: string;
 
   // Buyer review state — explains why a listing is not live yet
   verification_status: VerificationStatus;

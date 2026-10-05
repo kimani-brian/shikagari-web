@@ -40,7 +40,8 @@ export default function CarCard({
   const { has: inCompare, toggle: toggleCompare } = useCompare();
   const compared = inCompare(listing.id);
 
-  const stockCode = `STOCK ${listing.id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+  // Byline: the dealership name, or "Private listing" for an individual seller.
+  const sellerLabel = listing.seller_label?.trim() || "Private listing";
   const status = STATUS_META[listing.status] ?? STATUS_META.active;
 
   const handleFavorite = async (e: React.MouseEvent) => {
@@ -116,8 +117,11 @@ export default function CarCard({
             </div>
           )}
 
-          <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-neutral-900/85 text-white text-[10px] font-semibold tracking-wide backdrop-blur-sm">
-            {stockCode}
+          <span
+            title={sellerLabel}
+            className="absolute top-3 left-3 max-w-[60%] px-2.5 py-1 rounded-full bg-neutral-900/85 text-white text-[10px] font-semibold tracking-wide backdrop-blur-sm truncate"
+          >
+            {sellerLabel}
           </span>
 
           <button
