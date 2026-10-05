@@ -15,7 +15,7 @@ export interface PaginationMeta {
 }
 
 // ── User ──────────────────────────────────────────────────────────────────
-export type UserRole = "buyer" | "seller" | "dealer" | "admin";
+export type UserRole = "buyer" | "dealer" | "admin";
 
 export interface User {
   id:          string;
@@ -52,20 +52,6 @@ export interface DealerProfile {
   created_at:      string;
 }
 
-export interface PrivateSellerProfile {
-  id:                string;
-  user_id:           string;
-  national_id_no:    string;
-  location:          string;
-  address:           string;
-  profile_photo_url: string;
-  bio:               string;
-  approval_status:   ApprovalStatus;
-  approved_at:       string | null;
-  user:              UserSummary;
-  created_at:        string;
-}
-
 export interface UserSummary {
   id:          string;
   full_name:   string;
@@ -85,8 +71,10 @@ export interface DealerSummary {
 // ── Listings ──────────────────────────────────────────────────────────────
 export type FuelType     = "petrol" | "diesel" | "hybrid" | "electric";
 export type Transmission = "automatic" | "manual";
-export type ListingStatus = "active" | "inactive" | "sold";
-export type SellerType    = "dealer" | "private";
+// "pending" = buyer listing awaiting NTSA e-logbook review; hidden from search.
+export type ListingStatus      = "pending" | "active" | "inactive" | "sold";
+export type SellerType         = "dealer" | "private";
+export type VerificationStatus = "draft" | "pending" | "approved" | "rejected";
 
 export interface ListingCard {
   id:            string;
@@ -106,8 +94,14 @@ export interface ListingCard {
   doors:         number;
   color:         string;
   thumbnail_url: string;
+  cover_image?:  string;   // seller-chosen card photo
   seller_type:   SellerType;
   is_verified:   boolean;
+
+  // Buyer review state — explains why a listing is not live yet
+  verification_status: VerificationStatus;
+  rejection_reason?:   string;
+
   created_at:    string;
 }
 
@@ -131,20 +125,27 @@ export interface ListingDetail {
   doors:         number;
   color:         string;
   images:        string[];
+  cover_image?:  string;   // seller-chosen card photo
   view_count:    number;
   seller:        UserSummary;
-  dealer_profile:         DealerSummary | null;
-  private_seller_profile: PrivateSellerSummary | null;
+  dealer_profile: DealerSummary | null;
+
+  // Seller verification — present on buyer-created listings
+  verification_status:     VerificationStatus;
+  verification_full_name?: string;
+  verification_id_number?: string;
+  verification_elogbook_url?: string;
+  verified_at?:             string;
+  rejection_reason?:        string;
+
   created_at:    string;
   updated_at:    string;
 }
 
-export interface PrivateSellerSummary {
-  id:                string;
-  location:          string;
-  profile_photo_url: string;
-  is_verified:       boolean;
-}
+// ── Admin review ─────────────────────────────────────────────────────────
+// The pending-verification queue is admin-only, so it also carries the seller's
+// email address, which public listing responses deliberately omit.
+export type AdminPendingListing = ListingDetail & { seller_email: string };
 
 // ── Filters ───────────────────────────────────────────────────────────────
 export interface ListingFilters {

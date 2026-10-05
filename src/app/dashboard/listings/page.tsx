@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMyListings } from "@/hooks/useListings";
-import { formatKES, timeAgo } from "@/lib/utils";
+import { cn, formatKES, timeAgo } from "@/lib/utils";
 import {
   PlusCircle, Edit3, Trash2, Eye,
   Search
@@ -170,6 +170,64 @@ export default function MyListingsPage() {
   );
 }
 
+// ── Status cell ────────────────────────────────────────────────────────────────
+// Buyers only see their listing once an admin verifies the NTSA e-logbook, so
+// the dashboard has to say which stage a listing is stuck at.
+function StatusCell({ listing }: { listing: ListingCard }) {
+  const { verification_status: v, rejection_reason, status } = listing;
+
+  if (status === "sold" || v === "approved") {
+    return <Pill tone="green">{status === "sold" ? "Sold" : "Live"}</Pill>;
+  }
+
+  if (v === "rejected") {
+    return (
+      <div>
+        <Pill tone="red">Rejected</Pill>
+        {rejection_reason && (
+          <p className="text-[11px] text-red-600 mt-1 leading-snug max-w-[180px]">
+            {rejection_reason}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (v === "draft") {
+    return (
+      <div>
+        <Pill tone="amber">E-logbook needed</Pill>
+        <p className="text-[11px] text-neutral-400 mt-1 max-w-[180px] leading-snug">
+          Add your NTSA e-logbook to submit this for review.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <Pill tone="blue">In review</Pill>
+      <p className="text-[11px] text-neutral-400 mt-1 max-w-[180px] leading-snug">
+        Hidden until an admin approves it.
+      </p>
+    </div>
+  );
+}
+
+function Pill({ tone, children }: { tone: "green" | "red" | "amber" | "blue"; children: React.ReactNode }) {
+  return (
+    <span className={cn(
+      "inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold",
+      tone === "green" && "bg-green-50 text-green-700",
+      tone === "red"   && "bg-red-50 text-red-700",
+      tone === "amber" && "bg-amber-50 text-amber-700",
+      tone === "blue"  && "bg-blue-50 text-blue-700"
+    )}>
+      {children}
+    </span>
+  );
+}
+
 // ── Listing row ────────────────────────────────────────────────────────────────
 function ListingRow({
   listing,
@@ -205,6 +263,7 @@ function ListingRow({
           </p>
           <div className="flex items-center gap-3 mt-1.5 md:hidden">
             <span className="text-sm font-bold text-neutral-900">{formatKES(listing.price_kes)}</span>
+            <StatusCell listing={listing} />
           </div>
         </div>
       </div>
@@ -215,6 +274,11 @@ function ListingRow({
       </div>
 
 
+
+      {/* Status — desktop */}
+      <div className="hidden md:block">
+        <StatusCell listing={listing} />
+      </div>
 
       {/* Date — desktop */}
       <div className="hidden md:block">

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
-import { DealerProfile, PrivateSellerProfile } from "@/types";
+import { AdminPendingListing, DealerProfile } from "@/types";
 
 interface UseAdminProfilesReturn<T> {
   profiles: T[];
@@ -48,6 +48,8 @@ export function useAdminDealerProfiles(status = "pending") {
   return useAdminProfiles<DealerProfile>("/admin/dealers", status);
 }
 
-export function useAdminPrivateSellerProfiles(status = "pending") {
-  return useAdminProfiles<PrivateSellerProfile>("/admin/sellers", status);
+// Buyer listings awaiting NTSA e-logbook review. These have no separate
+// profile endpoint — approval happens on the listing itself.
+export function useAdminPendingListings() {
+  return useAdminProfiles<AdminPendingListing>("/admin/listings/pending", "");
 }

@@ -84,6 +84,7 @@ export function ApprovalBadge({ status }: { status: string }) {
 
 export function ListingStatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
+    pending: "In review",
     active: "Active",
     inactive: "Inactive",
     sold: "Sold",

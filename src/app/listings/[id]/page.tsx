@@ -8,9 +8,9 @@ import { cn, formatKES, formatMileage, timeAgo } from "@/lib/utils";
 import { useListing } from "@/hooks/useListings";
 import { useAuth } from "@/contexts/AuthContext";
 import { CarDetailSkeleton } from "@/components/ui/Skeleton";
-import { FuelBadge } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import PageWrapper from "@/components/layout/PageWrapper";
+import InquiryModal from "@/components/shared/InquiryModal";
 import Icon from "@/components/ui/Icon";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
@@ -29,16 +29,9 @@ export default function CarDetailPage() {
   const [toggling, setToggling] = useState(false);
 
   const [inquiryOpen, setInquiryOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
   const [inquirySent, setInquirySent] = useState(false);
 
-  const DEFAULT_MESSAGE = "Hi, is this car still available? Can we arrange a viewing?";
-
-  const openInquiry = () => {
-    if (!message.trim()) setMessage(DEFAULT_MESSAGE);
-    setInquiryOpen(true);
-  };
+  const openInquiry = () => setInquiryOpen(true);
 
   if (loading) {
     return (
@@ -104,31 +97,8 @@ export default function CarDetailPage() {
     }
   };
 
-  const handleSendInquiry = async () => {
-    if (!isLoggedIn) {
-      toast.error("Sign in to contact the seller");
-      router.push("/login");
-      return;
-    }
-    if (!message.trim()) {
-      toast.error("Please enter a message");
-      return;
-    }
-    try {
-      setSending(true);
-      await api.post(`/listings/${listing.id}/inquiries`, { message });
-      setInquirySent(true);
-      toast.success("Message sent");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Could not send message");
-    } finally {
-      setSending(false);
-    }
-  };
-
   const sellerName = listing.dealer_profile?.business_name ?? listing.seller.full_name;
-  const sellerPhoto =
-    listing.dealer_profile?.logo_url ?? listing.private_seller_profile?.profile_photo_url ?? null;
+  const sellerPhoto = listing.dealer_profile?.logo_url ?? null;
 
   const SPECS = [
     { icon: "calendar_today" as const, label: "Year", value: String(listing.year) },
@@ -350,51 +320,13 @@ export default function CarDetailPage() {
       </PageWrapper>
 
       {inquiryOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="absolute inset-0 bg-neutral-900/30" onClick={() => setInquiryOpen(false)} />
-          <div className="relative bg-white rounded-2xl w-full max-w-md border border-neutral-200">
-            <div className="flex items-center justify-between p-5 border-b border-neutral-200">
-              <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Contact seller</h3>
-                <p className="text-xs text-neutral-500 mt-0.5">{sellerName}</p>
-              </div>
-              <button
-                onClick={() => setInquiryOpen(false)}
-                className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200"
-              >
-                <Icon name="close" size={18} />
-              </button>
-            </div>
-
-            <div className="mx-5 mt-4 p-3 bg-neutral-50 rounded-xl border border-neutral-200">
-              <p className="text-xs text-neutral-500 mb-0.5">Regarding</p>
-              <p className="text-sm font-medium text-neutral-900 line-clamp-1">{listing.title}</p>
-              <p className="text-sm font-semibold text-neutral-900">{formatKES(listing.price_kes)}</p>
-            </div>
-
-            <div className="p-5">
-              <label className="text-sm font-medium text-neutral-700 block mb-2">
-                Message
-              </label>
-              <textarea
-                rows={4}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 resize-none"
-              />
-              <p className="text-xs text-neutral-400 mt-1.5 text-right">{message.length} / 1000</p>
-            </div>
-
-            <div className="px-5 pb-5 flex gap-3">
-              <Button variant="secondary" fullWidth onClick={() => setInquiryOpen(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" fullWidth loading={sending} onClick={handleSendInquiry} leftIcon={<Icon name="chat_bubble" size={18} />}>
-                Send
-              </Button>
-            </div>
-          </div>
-        </div>
+        <InquiryModal
+          listingId={listing.id}
+          vehicle={{ title: listing.title, priceKES: listing.price_kes }}
+          sellerName={sellerName}
+          onClose={() => setInquiryOpen(false)}
+          onSent={() => setInquirySent(true)}
+        />
       )}
 
       {lightboxOpen && images.length > 0 && (

@@ -7,7 +7,7 @@ import api from "@/lib/api";
 import Input, { Textarea, SelectField } from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import toast from "react-hot-toast";
-import { ArrowLeft, Upload, X, Car, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, X, Car, AlertCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
@@ -38,6 +38,8 @@ interface FormData {
   engine_size:  string;
   doors:        string;
   color:        string;
+  verification_full_name: string;
+  verification_id_number: string;
 }
 
 const EMPTY_FORM: FormData = {
@@ -55,6 +57,8 @@ const EMPTY_FORM: FormData = {
   engine_size:  "",
   doors:        "",
   color:        "",
+  verification_full_name: "",
+  verification_id_number: "",
 };
 
 export default function NewListingPage() {
@@ -68,6 +72,14 @@ export default function NewListingPage() {
   const [imageFiles,   setImageFiles]   = useState<File[]>([]);
   const [imagePreviews,setImagePreviews]= useState<string[]>([]);
   const [step,         setStep]         = useState<1 | 2>(1);
+  // Which photo represents the listing on cards and in search results.
+  const [coverIndex,   setCoverIndex]   = useState(0);
+  const [elogbook,     setELogbook]     = useState<File | null>(null);
+  const [elogbookError,setELogbookError]= useState("");
+
+  // Buyers list personally and their listing is only published once an admin
+  // verifies the NTSA e-logbook. Approved dealers publish immediately.
+  const isBuyerListing = user?.role === "buyer" || (user?.role === "admin" && !user?.is_verified);
 
   const set = (key: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -101,6 +113,29 @@ export default function NewListingPage() {
   const removeImage = (index: number) => {
     setImageFiles((prev)    => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setCoverIndex((prev) => {
+      if (imageFiles.length <= 1) return 0;
+      if (prev === index) return 0;
+      return prev > index ? prev - 1 : prev;
+    });
+  };
+
+  // ── E-logbook handling ────────────────────────────────────────────────
+  const handleELogbook = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+    if (!allowed.includes(file.type)) {
+      setELogbookError("E-logbook must be a JPEG, PNG, WebP, or PDF file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setELogbookError("E-logbook must be 5MB or smaller");
+      return;
+    }
+    setELogbookError("");
+    setELogbook(file);
   };
 
   // ── Validation ─────────────────────────────────────────────────────────
@@ -114,8 +149,16 @@ export default function NewListingPage() {
     if (!form.model.trim())   errs.model        = "Enter the model";
     if (!form.mileage || isNaN(Number(form.mileage)) || Number(form.mileage) < 0)
       errs.mileage  = "Enter valid mileage";
+    if (isBuyerListing) {
+      if (!form.verification_full_name.trim())
+        errs.verification_full_name = "Enter your full name as it appears on your ID";
+      if (!form.verification_id_number.trim())
+        errs.verification_id_number = "Enter your national ID number";
+      if (!elogbook)
+        setELogbookError("Upload your NTSA e-logbook");
+    }
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+    return Object.keys(errs).length === 0 && (!isBuyerListing || !!elogbook);
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────
@@ -145,20 +188,46 @@ export default function NewListingPage() {
         engine_size:  form.engine_size.trim() || undefined,
         doors:        form.doors ? Number(form.doors) : undefined,
         color:        form.color.trim(),
+        // Buyer-only: identity travels with the create request, the e-logbook
+        // file is attached in the next step once we have a listing ID.
+        ...(isBuyerListing ? {
+          verification_full_name: form.verification_full_name.trim(),
+          verification_id_number: form.verification_id_number.trim(),
+        } : {}),
       });
 
       const listingId = res.data.data.id;
 
-      // 2. Upload images if any
-      if (imageFiles.length > 0) {
-        const formData = new FormData();
-        imageFiles.forEach((file) => formData.append("images", file));
-        await api.post(`/listings/${listingId}/images`, formData, {
+      // 2. Attach the NTSA e-logbook — submits the listing for review
+      if (isBuyerListing && elogbook) {
+        const elogbookForm = new FormData();
+        elogbookForm.append("elogbook", elogbook);
+        await api.post(`/listings/${listingId}/elogbook`, elogbookForm, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
 
-      toast.success("Listing created successfully! 🎉");
+      // 3. Upload images if any
+      if (imageFiles.length > 0) {
+        const formData = new FormData();
+        imageFiles.forEach((file) => formData.append("images", file));
+        const uploadRes = await api.post(`/listings/${listingId}/images`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        // 4. Promote the photo the seller picked as the card thumbnail
+        const uploaded: string[] = uploadRes.data.data.images ?? [];
+        const chosen = uploaded[coverIndex];
+        if (chosen) {
+          await api.patch(`/listings/${listingId}/cover`, { image_url: chosen });
+        }
+      }
+
+      toast.success(
+        isBuyerListing
+          ? "Listing submitted for verification. It goes live once an admin approves your e-logbook."
+          : "Listing created successfully!"
+      );
       router.push("/dashboard/listings");
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? "Failed to create listing. Please try again.";
@@ -390,7 +459,7 @@ export default function NewListingPage() {
             <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
               <h3 className="font-display font-bold text-neutral-900 mb-1">Photos</h3>
               <p className="text-xs text-neutral-500 mb-4">
-                Upload up to 10 photos. First photo will be the thumbnail.
+                Upload up to 10 photos. Tap a photo to make it the card thumbnail.
               </p>
 
               {/* Upload area */}
@@ -421,26 +490,48 @@ export default function NewListingPage() {
                 />
               </label>
 
-              {/* Previews */}
+              {/* Previews — click to choose the cover */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-3">
-                  {imagePreviews.map((src, i) => (
-                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden group">
-                      <img src={src} alt="" className="w-full h-full object-cover" />
-                      {i === 0 && (
-                        <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-neutral-900 text-white text-[9px] font-bold rounded-md">
-                          Cover
-                        </div>
-                      )}
+                  {imagePreviews.map((src, i) => {
+                    const isCover = i === coverIndex;
+                    return (
                       <button
+                        key={i}
                         type="button"
-                        onClick={() => removeImage(i)}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-neutral-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setCoverIndex(i)}
+                        aria-pressed={isCover}
+                        aria-label={`Use photo ${i + 1} as thumbnail`}
+                        className={cn(
+                          "relative aspect-square rounded-xl overflow-hidden group transition-all",
+                          isCover
+                            ? "ring-2 ring-neutral-900 ring-offset-1"
+                            : "opacity-75 hover:opacity-100"
+                        )}
                       >
-                        <X className="w-3 h-3" />
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                        {isCover ? (
+                          <span className="absolute top-1 left-1 inline-flex items-center gap-1 px-1.5 py-0.5 bg-neutral-900 text-white text-[9px] font-bold rounded-md">
+                            Thumbnail
+                          </span>
+                        ) : (
+                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-white/90 text-neutral-700 text-[9px] font-semibold rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Set as thumbnail
+                          </span>
+                        )}
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => { e.stopPropagation(); removeImage(i); }}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); removeImage(i); } }}
+                          aria-label={`Remove photo ${i + 1}`}
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-neutral-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </span>
                       </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               <p className="text-xs text-neutral-400 text-right mt-2">
@@ -459,8 +550,83 @@ export default function NewListingPage() {
                 <SummaryRow label="Year"     value={form.year     || "—"} />
                 <SummaryRow label="Price"    value={form.price_kes ? `KES ${Number(form.price_kes).toLocaleString()}` : "—"} />
                 <SummaryRow label="Location" value={form.location || "—"} />
+                {isBuyerListing && (
+                  <SummaryRow
+                    label="Review"
+                    value={elogbook ? "Pending admin check" : "E-logbook missing"}
+                  />
+                )}
               </div>
             </div>
+
+            {/* Ownership verification — buyers only */}
+            {isBuyerListing && (
+              <div className="bg-white rounded-2xl p-5 border border-neutral-200 space-y-4">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="font-display font-bold text-neutral-900 text-sm">Ownership verification</h3>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      An admin checks these details before your listing is published.
+                    </p>
+                  </div>
+                </div>
+
+                <Input
+                  label="Full name"
+                  placeholder="As it appears on your national ID"
+                  value={form.verification_full_name}
+                  onChange={(e) => set("verification_full_name", e.target.value)}
+                  error={errors.verification_full_name}
+                />
+                <Input
+                  label="National ID number"
+                  placeholder="e.g. 29458821X"
+                  value={form.verification_id_number}
+                  onChange={(e) => set("verification_id_number", e.target.value)}
+                  error={errors.verification_id_number}
+                />
+
+                <div>
+                  <span className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    NTSA e-logbook
+                  </span>
+                  <label className={cn(
+                    "flex flex-col items-center justify-center gap-2 p-5 rounded-xl border-2 border-dashed cursor-pointer transition-all",
+                    elogbook
+                      ? "border-neutral-900 bg-neutral-50"
+                      : "border-slate-300 hover:border-brand-400 hover:bg-neutral-50"
+                  )}>
+                    <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
+                      {elogbook
+                        ? <ShieldCheck className="w-4 h-4 text-neutral-700" />
+                        : <Upload className="w-4 h-4 text-neutral-400" />
+                      }
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-neutral-700">
+                        {elogbook ? elogbook.name : "Upload your e-logbook"}
+                      </p>
+                      <p className="text-xs text-neutral-400 mt-0.5">
+                        {elogbook
+                          ? `${(elogbook.size / 1024 / 1024).toFixed(1)}MB — click to replace`
+                          : "Photo or PDF — max 5MB"
+                        }
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                      onChange={handleELogbook}
+                      className="sr-only"
+                    />
+                  </label>
+                  {elogbookError && (
+                    <p className="text-xs text-red-600 mt-1.5">{elogbookError}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Submit */}
             <Button
@@ -470,8 +636,14 @@ export default function NewListingPage() {
               size="lg"
               loading={loading}
             >
-              Publish Listing
+              {isBuyerListing ? "Submit for verification" : "Publish Listing"}
             </Button>
+
+            {isBuyerListing && (
+              <p className="text-xs text-neutral-400 text-center">
+                Your listing stays hidden until an admin verifies your e-logbook.
+              </p>
+            )}
 
             <Button
               type="button"

@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";import SearchBar from "@/components/search/SearchBar";
 import CarCard from "@/components/cars/CarCard";
 import { CarCardSkeleton } from "@/components/ui/Skeleton";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import api from "@/lib/api";
-import Input, { SelectField, Textarea } from "@/components/ui/Input";
-import toast from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { ListingCard, PrivateSellerProfile } from "@/types";
+import { ListingCard } from "@/types";
 import { BODY_TYPES } from "@/lib/vehicles";
 import Reveal from "@/components/shared/Reveal";
 import {
@@ -137,24 +135,6 @@ const COMPARE_POINTS = [
   },
 ];
 
-const SELLER_LOCATIONS = [
-  "Nairobi",
-  "Mombasa",
-  "Kisumu",
-  "Nakuru",
-  "Eldoret",
-  "Thika",
-  "Malindi",
-  "Nyeri",
-  "Machakos",
-  "Kisii",
-  "Kericho",
-  "Garissa",
-  "Meru",
-  "Kakamega",
-  "Other",
-].map((city) => ({ value: city, label: city }));
-
 // SectionEdge paints a curved top or bottom edge on the dark bands so they
 // flow into the neighbouring white/gray sections instead of butting against
 // them. `tone` is the colour of the adjacent section. The top and bottom
@@ -191,40 +171,6 @@ export default function HomePage() {
   const { user } = useAuth();
   const [featured, setFeatured] = useState<ListingCard[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
-  const [sellerProfile, setSellerProfile] = useState<PrivateSellerProfile | null>(null);
-  const [checkingProfile, setCheckingProfile] = useState(false);
-  const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
-  const [nationalId, setNationalId] = useState("");
-  const [sellerLocation, setSellerLocation] = useState("");
-  const [sellerBio, setSellerBio] = useState("");
-  const [requestLoading, setRequestLoading] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const isBuyer = user?.role === "buyer";
-  const sellerStatus = sellerProfile?.approval_status;
-
-  const loadSellerProfile = useCallback(async () => {
-    if (!isBuyer) {
-      setSellerProfile(null);
-      setCheckingProfile(false);
-      return;
-    }
-    setCheckingProfile(true);
-    setProfileLoadError(null);
-    try {
-      const res = await api.get("/sellers/profile");
-      setSellerProfile(res.data.data ?? null);
-    } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 404) {
-        setSellerProfile(null);
-      } else {
-        const message = err?.response?.data?.message ?? "Could not load profile";
-        setProfileLoadError(message);
-      }
-    } finally {
-      setCheckingProfile(false);
-    }
-  }, [isBuyer]);
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -240,43 +186,6 @@ export default function HomePage() {
     fetchFeatured();
   }, []);
 
-  useEffect(() => {
-    loadSellerProfile();
-  }, [loadSellerProfile]);
-
-  const handleRequestApproval = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!isBuyer) {
-      toast.error("You need a buyer account to apply as seller");
-      return;
-    }
-    if (!nationalId.trim() || !sellerLocation) {
-      setFormError("National ID and location are required");
-      return;
-    }
-    setFormError(null);
-    setRequestLoading(true);
-    try {
-      const payload = {
-        national_id_no: nationalId.trim(),
-        location: sellerLocation,
-        bio: sellerBio.trim() || undefined,
-      };
-      const res = await api.post("/sellers/profile", payload);
-      setSellerProfile(res.data.data ?? null);
-      toast.success("Request sent");
-      setNationalId("");
-      setSellerLocation("");
-      setSellerBio("");
-    } catch (err: any) {
-      const message = err?.response?.data?.message ?? "Could not submit request";
-      setFormError(message);
-      toast.error(message);
-    } finally {
-      setRequestLoading(false);
-    }
-  };
-
   return (
     <div className="bg-white">
       {/* Hero */}
@@ -287,7 +196,7 @@ export default function HomePage() {
               Find cars for sale in Kenya
             </h1>
             <p className="text-sm sm:text-base text-neutral-500 text-center mt-3">
-              Search vehicles from dealers and private sellers
+              Search verified vehicles from trusted dealers and individuals
             </p>
 
             <div className="mt-12">
@@ -541,115 +450,59 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Seller section for buyers */}
-      {isBuyer && (
-        <section className="py-12 sm:py-16 bg-neutral-50 border-t border-neutral-200">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8">
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon name="storefront" size={20} className="text-neutral-700" />
-                  <h2 className="text-base font-semibold text-neutral-900">Sell your car</h2>
-                </div>
-                <p className="text-xs text-neutral-500 leading-relaxed mb-6">
-                  Apply for a private seller account to list your car. Admin review is required before you can publish.
-                </p>
+      {/* Sell your car — individuals list directly */}
+      <section className="py-12 sm:py-16 bg-neutral-50 border-t border-neutral-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8">
+              <div className="flex items-center gap-2 mb-3">
+                <Icon name="storefront" size={20} className="text-neutral-700" />
+                <h2 className="text-base font-semibold text-neutral-900">Sell your car</h2>
+              </div>
+              <p className="text-xs text-neutral-500 leading-relaxed mb-6">
+                List straight from your account. Add your vehicle details and upload your NTSA
+                e-logbook — our team verifies ownership before your listing goes live.
+              </p>
 
-                {checkingProfile ? (
-                  <div className="border border-neutral-200 rounded-xl p-4 flex items-center gap-3 text-sm text-neutral-500">
-                    <Icon name="schedule" size={18} />
-                    Checking status
-                  </div>
-                ) : profileLoadError ? (
-                  <div className="border border-neutral-200 rounded-xl p-4">
-                    <p className="text-sm font-medium text-neutral-900">Could not load status</p>
-                    <p className="text-xs text-neutral-500 mt-1 mb-3">{profileLoadError}</p>
-                    <Button variant="secondary" size="sm" onClick={() => loadSellerProfile()}>
-                      Try again
+              <ol className="space-y-3 mb-6">
+                {[
+                  "Add your vehicle details, price, and photos",
+                  "Upload your NTSA e-logbook as proof of ownership",
+                  "Admin verifies, then your listing is live",
+                ].map((step, i) => (
+                  <li key={step} className="flex items-start gap-3 text-sm text-neutral-700">
+                    <span className="mt-0.5 w-5 h-5 shrink-0 rounded-full bg-neutral-900 text-white text-[11px] font-semibold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex flex-wrap gap-3">
+                {user ? (
+                  <Link href="/dashboard/listings/new">
+                    <Button variant="primary" size="sm">
+                      List your car
                     </Button>
-                  </div>
-                ) : sellerProfile ? (
-                  sellerStatus === "approved" ? (
-                    <div className="border border-neutral-900 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        <Icon name="check_circle" size={20} className="text-neutral-900 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium text-neutral-900">Approved to list</p>
-                          <p className="text-xs text-neutral-500">You can now create listings</p>
-                        </div>
-                      </div>
-                      <Link href="/dashboard/listings/new">
-                        <Button variant="primary" size="sm">
-                          Create listing
-                        </Button>
-                      </Link>
-                    </div>
-                  ) : sellerStatus === "pending" ? (
-                    <div className="border border-neutral-200 rounded-xl p-4 flex items-start gap-3">
-                      <Icon name="schedule" size={20} className="text-neutral-500 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-neutral-900">Under review</p>
-                        <p className="text-xs text-neutral-500 mt-1 mb-3">
-                          Your request is being reviewed. You will be notified once approved.
-                        </p>
-                        <Button variant="secondary" size="sm" onClick={() => loadSellerProfile()}>
-                          Refresh
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="border border-neutral-200 rounded-xl p-4">
-                      <p className="text-sm font-medium text-neutral-900">Not approved</p>
-                      <p className="text-xs text-neutral-500 mt-1 mb-3">
-                        Update your profile and resubmit for review.
-                      </p>
-                      <Link href="/sellers/profile/new">
-                        <Button size="sm" variant="secondary">
-                          Update details
-                        </Button>
-                      </Link>
-                    </div>
-                  )
+                  </Link>
                 ) : (
-                  <form onSubmit={handleRequestApproval} className="space-y-4">
-                    <p className="text-xs text-neutral-500">
-                      Share a few details to apply. Review usually takes less than one business day.
-                    </p>
-                    <Input
-                      label="National ID number"
-                      placeholder="Enter ID number"
-                      value={nationalId}
-                      onChange={(e) => setNationalId(e.target.value)}
-                      required
-                    />
-                    <SelectField
-                      label="Location"
-                      placeholder="Select location"
-                      options={SELLER_LOCATIONS}
-                      value={sellerLocation}
-                      onChange={(e) => setSellerLocation(e.target.value)}
-                      required
-                    />
-                    <Textarea
-                      label="About you"
-                      placeholder="Tell buyers about your car"
-                      rows={3}
-                      maxLength={500}
-                      value={sellerBio}
-                      onChange={(e) => setSellerBio(e.target.value)}
-                      hint="Up to 500 characters"
-                    />
-                    {formError && <p className="text-xs text-neutral-900">{formError}</p>}
-                    <Button type="submit" variant="primary" loading={requestLoading}>
-                      Submit request
+                  <Link href="/register">
+                    <Button variant="primary" size="sm">
+                      Create an account to sell
                     </Button>
-                  </form>
+                  </Link>
                 )}
+                <Link href="/register?role=dealer">
+                  <Button variant="secondary" size="sm">
+                    Register as a dealer
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
     </div>
   );
 }

@@ -9,45 +9,16 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Icon from "@/components/ui/Icon";
 import toast from "react-hot-toast";
-import { cn } from "@/lib/utils";
-
-const ROLES = [
-  {
-    value: "buyer",
-    label: "Buying",
-    description: "Browse listings and contact sellers",
-  },
-  {
-    value: "selling",
-    label: "Selling",
-    description: "List vehicles as dealer or private seller",
-  },
-];
-
-const SELLER_TYPES = [
-  {
-    value: "dealer",
-    label: "Dealer",
-    description: "Business with multiple cars in stock",
-  },
-  {
-    value: "seller",
-    label: "Private seller",
-    description: "Individual selling your own car",
-  },
-];
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
 
-  // Preselect the account type when arriving from a landing page card,
-  // e.g. /register?role=dealer
-  const presetRole = searchParams.get("role");
-  const [role, setRole] = useState<"buyer" | "seller" | "dealer">(
-    presetRole === "dealer" ? "dealer" : presetRole === "seller" ? "seller" : "buyer"
-  );
+  // Everyone registers as a buyer. Dealerships arrive via /register?role=dealer
+  // (linked from the dealer pages), which only changes how the form reads.
+  const role: "buyer" | "dealer" =
+    searchParams.get("role") === "dealer" ? "dealer" : "buyer";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -119,75 +90,13 @@ function RegisterForm() {
               Sign in
             </Link>
           </p>
-        </div>
-
-        <div className="mb-6">
-          {role === "buyer" ? (
-            <>
-              <p className="text-sm font-medium text-neutral-700 mb-3">I am joining as</p>
-              <div className="grid grid-cols-2 gap-3">
-                {ROLES.map((r) => {
-                  const isActive = r.value === "buyer";
-                  return (
-                    <button
-                      key={r.value}
-                      type="button"
-                      onClick={() => {
-                        if (r.value !== "buyer") setRole("seller");
-                      }}
-                      className={cn(
-                        "flex flex-col items-start gap-2 p-4 rounded-xl border text-left transition-colors",
-                        isActive ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900"
-                      )}
-                    >
-                      <Icon name={r.value === "buyer" ? "search" : "storefront"} size={18} className={isActive ? "text-white" : "text-neutral-500"} />
-                      <div>
-                        <p className={cn("text-sm font-medium", isActive ? "text-white" : "text-neutral-900")}>{r.label}</p>
-                        <p className={cn("text-xs leading-relaxed mt-0.5", isActive ? "text-neutral-300" : "text-neutral-500")}>
-                          {r.description}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setRole("buyer")}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 mb-3 transition-colors"
-              >
-                <Icon name="arrow_back" size={16} />
-                Back
-              </button>
-              <p className="text-sm font-medium text-neutral-700 mb-3">Selling as</p>
-              <div className="grid grid-cols-2 gap-3">
-                {SELLER_TYPES.map((t) => {
-                  const isActive = role === t.value;
-                  return (
-                    <button
-                      key={t.value}
-                      type="button"
-                      onClick={() => setRole(t.value as "seller" | "dealer")}
-                      className={cn(
-                        "flex flex-col items-start gap-2 p-4 rounded-xl border text-left transition-colors",
-                        isActive ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-700 border-neutral-300 hover:border-neutral-900"
-                      )}
-                    >
-                      <Icon name={t.value === "dealer" ? "store" : "person"} size={18} className={isActive ? "text-white" : "text-neutral-500"} />
-                      <div>
-                        <p className={cn("text-sm font-medium", isActive ? "text-white" : "text-neutral-900")}>{t.label}</p>
-                        <p className={cn("text-xs leading-relaxed mt-0.5", isActive ? "text-neutral-300" : "text-neutral-500")}>
-                          {t.description}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
+          {role !== "dealer" && (
+            <Link
+              href="/register?role=dealer"
+              className="mt-5 inline-block px-5 py-3 rounded-xl bg-neutral-900 text-sm font-bold tracking-tight text-white hover:bg-neutral-800 transition-colors"
+            >
+              Register as a dealer
+            </Link>
           )}
         </div>
 

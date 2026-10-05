@@ -15,7 +15,7 @@ const SECTIONS = [
   },
   {
     title: "Accounts and verification",
-    copy: "You must provide accurate details when registering. Sellers must complete dealer or private seller verification and receive admin approval before publishing listings.",
+    copy: "You must provide accurate details when registering. Individual sellers list from their own account and must submit their identity details and an NTSA e-logbook; an admin verifies each listing before it is published. Dealers publish immediately once their dealer profile is approved.",
   },
   {
     title: "Listings",

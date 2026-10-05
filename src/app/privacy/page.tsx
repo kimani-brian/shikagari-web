@@ -11,15 +11,15 @@ export const metadata: Metadata = {
 const SECTIONS = [
   {
     title: "Information we collect",
-    copy: "Account details you provide (name, email, phone), seller verification documents (business registration, KRA PIN, national ID), listings and photos you publish, and inquiries you send through the marketplace.",
+    copy: "Account details you provide (name, email, phone), verification documents (business registration, KRA PIN for dealers; national ID number and NTSA e-logbook for individual listings), listings and photos you publish, and inquiries you send through the marketplace.",
   },
   {
     title: "How we use it",
-    copy: "To operate accounts, verify dealers and private sellers, display listings, route inquiries between buyers and sellers, and keep the marketplace safe from fraud and abuse.",
+    copy: "To operate accounts, verify dealer profiles and individual listings, display listings, route inquiries between buyers and sellers, and keep the marketplace safe from fraud and abuse.",
   },
   {
     title: "What we share",
-    copy: "Listing details and seller contact information you choose to publish are visible to other users. We do not sell personal data. Verification documents are used for admin review only.",
+    copy: "Listing details and seller contact information you choose to publish are visible to other users. We do not sell personal data. Identity documents and e-logbooks are used for admin review only and are not shown publicly.",
   },
   {
     title: "Storage and security",

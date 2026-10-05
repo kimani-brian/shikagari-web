@@ -32,9 +32,9 @@ export default function DashboardPage() {
   const [dealerName,     setDealerName]     = useState<string | null>(null);
   const [sellerStatus,   setSellerStatus]   = useState<string | null>(null);
   const [loading,        setLoading]        = useState(true);
-  const [pendingCounts,  setPendingCounts]  = useState<{ dealers: number | null; sellers: number | null}>({
+  const [pendingCounts,  setPendingCounts]  = useState<{ dealers: number | null; listings: number | null}>({
     dealers: null,
-    sellers: null,
+    listings: null,
   });
   const [pendingLoading, setPendingLoading] = useState(false);
   const verificationSyncRequested = useRef(false);
@@ -44,12 +44,11 @@ export default function DashboardPage() {
     return `${count} ${singular}${count === 1 ? "" : "s"} pending`;
   };
 
-  const isSeller = user?.role === "seller" || user?.role === "dealer";
   const isDealer = user?.role === "dealer";
   const isAdmin  = user?.role === "admin";
 
   useEffect(() => {
-    if (!isSeller) {
+    if (user?.role === "admin") {
       setLoading(false);
       return;
     }
@@ -77,11 +76,6 @@ export default function DashboardPage() {
           setDealerName(dealerRes.data.data?.business_name ?? null);
         } catch { /* No dealer profile */ }
 
-        try {
-          const sellerRes = await api.get("/sellers/profile");
-          setSellerStatus(sellerRes.data.data?.approval_status ?? null);
-        } catch { /* No private seller profile */ }
-
       } catch {
         // Silently fail — user may be buyer
       } finally {
@@ -89,7 +83,7 @@ export default function DashboardPage() {
       }
     };
     fetchData();
-  }, [isSeller]);
+  }, [user?.role]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -98,9 +92,9 @@ export default function DashboardPage() {
     const fetchPendingCounts = async () => {
       setPendingLoading(true);
       try {
-        const [dealerRes, sellerRes] = await Promise.all([
+        const [dealerRes, listingRes] = await Promise.all([
           api.get("/admin/dealers", { params: { status: "pending", page: 1, per_page: 1 } }),
-          api.get("/admin/sellers", { params: { status: "pending", page: 1, per_page: 1 } }),
+          api.get("/admin/listings/pending", { params: { page: 1, per_page: 1 } }),
         ]);
 
         if (cancelled) return;
@@ -109,11 +103,11 @@ export default function DashboardPage() {
 
         setPendingCounts({
           dealers: readTotal(dealerRes),
-          sellers: readTotal(sellerRes),
+          listings: readTotal(listingRes),
         });
       } catch {
         if (!cancelled) {
-          setPendingCounts({ dealers: null, sellers: null });
+          setPendingCounts({ dealers: null, listings: null });
         }
       } finally {
         if (!cancelled) {
@@ -126,29 +120,26 @@ export default function DashboardPage() {
     return () => { cancelled = true; };
   }, [isAdmin]);
 
-  const approvalStatus = isSeller ? dealerStatus ?? sellerStatus : null;
+  const approvalStatus = isDealer ? dealerStatus : null;
   // Dealers see their dealership name instead of "dealer account";
   // hidden entirely when it would repeat the user's name.
-  // Private sellers see "Private seller" instead of "seller account".
   const overviewSubtitle = isDealer
     ? dealerName?.trim()
       ? dealerName.trim().toLowerCase() === user?.full_name?.trim().toLowerCase()
         ? null
         : dealerName
       : "Dealer account"
-    : user?.role === "seller"
-      ? "Private seller"
-      : user?.role
-        ? `${user.role} account`
-        : null;
+    : user?.role
+      ? `${user.role} account`
+      : null;
   const isApproved     = approvalStatus === "approved";
-  const showVerifiedBadge = isSeller && (user?.is_verified || isApproved);
+  const showVerifiedBadge = (user?.is_verified ?? false) || isApproved;
 
   useEffect(() => {
-    if (!isSeller || !isApproved || user?.is_verified || verificationSyncRequested.current) return;
+    if (!isDealer || !isApproved || user?.is_verified || verificationSyncRequested.current) return;
     verificationSyncRequested.current = true;
     refreshUser();
-  }, [isSeller, isApproved, user?.is_verified, refreshUser]);
+  }, [isDealer, isApproved, user?.is_verified, refreshUser]);
 
   const STAT_CARDS = [
     {
@@ -194,7 +185,7 @@ export default function DashboardPage() {
               <p className="text-neutral-500 text-sm mt-1 capitalize">{overviewSubtitle}</p>
             )}
           </div>
-          {isSeller && isApproved && (
+          {isDealer && isApproved && (
             <Link href="/dashboard/listings/new">
               <Button
                 variant="navy"
@@ -212,9 +203,9 @@ export default function DashboardPage() {
       {isAdmin && (
         <div className="bg-white rounded-2xl border border-neutral-200  p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-semibold text-neutral-900">Review seller submissions</p>
+            <p className="font-semibold text-neutral-900">Review submissions</p>
             <p className="text-sm text-neutral-500">
-              Approve dealer and private seller profiles so verified sellers stand out on the marketplace.
+              Approve dealer profiles and verify buyer listings against their NTSA e-logbook.
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 text-xs font-semibold text-neutral-700">
@@ -223,7 +214,7 @@ export default function DashboardPage() {
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 text-xs font-semibold text-neutral-700">
                 <UserCheck className="w-3.5 h-3.5 text-neutral-700" />
-                {formatPendingLabel(pendingCounts.sellers, "seller")}
+                {formatPendingLabel(pendingCounts.listings, "listing")}
               </span>
             </div>
           </div>
@@ -241,47 +232,35 @@ export default function DashboardPage() {
               href="/dashboard/admin/verified"
               className="text-xs font-semibold text-neutral-900 hover:text-brand-800 text-right"
             >
-              Browse verified sellers →
+              Browse verified dealers →
             </Link>
           </div>
         </div>
       )}
 
-      {/* ── Approval status banner ────────────────────────────────────── */}
-      {isSeller && !approvalStatus && (
+      {/* ── Dealer approval status banner ───────────────────────────── */}
+      {isDealer && !approvalStatus && (
         <div className="bg-neutral-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
           <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
             <AlertCircle className="w-5 h-5 text-amber-600" />
           </div>
           <div className="flex-1">
             <p className="font-semibold text-amber-900 mb-1">
-              Complete your seller profile
+              Complete your dealer profile
             </p>
             <p className="text-sm text-neutral-700 mb-3">
-              {isDealer
-                ? "You need an approved dealer profile before you can list vehicles."
-                : "You need an approved private seller profile before you can list vehicles."}
+              You need an approved dealer profile before you can list vehicles.
             </p>
-            <div className="flex flex-wrap gap-2">
-              {isDealer ? (
-                <Link href="/dealers/profile/new">
-                  <Button variant="primary" size="sm">
-                    Create Dealer Profile
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/sellers/profile/new">
-                  <Button variant="primary" size="sm">
-                    Create Private Seller Profile
-                  </Button>
-                </Link>
-              )}
-            </div>
+            <Link href="/dealers/profile/new">
+              <Button variant="primary" size="sm">
+                Create Dealer Profile
+              </Button>
+            </Link>
           </div>
         </div>
       )}
 
-      {isSeller && approvalStatus && approvalStatus !== "approved" && (
+      {isDealer && approvalStatus && approvalStatus !== "approved" && (
         <div className={cn(
           "rounded-2xl p-5 flex items-start gap-4 border",
           approvalStatus === "pending"
@@ -312,8 +291,8 @@ export default function DashboardPage() {
               approvalStatus === "pending" ? "text-blue-700" : "text-neutral-700"
             )}>
               {approvalStatus === "pending"
-                ? "Our team is reviewing your seller profile. You'll be able to list cars once approved."
-                : "Your seller profile was not approved. Please contact support for more information."
+                ? "Our team is reviewing your dealer profile. You'll be able to list cars once approved."
+                : "Your dealer profile was not approved. Please contact support for more information."
               }
             </p>
           </div>
@@ -321,7 +300,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Stats grid ────────────────────────────────────────────────── */}
-      {isSeller && (
+      {!isAdmin && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {STAT_CARDS.map((card) => {
             const Icon = card.icon;
@@ -345,7 +324,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Recent listings ───────────────────────────────────────────── */}
-      {isSeller && (
+      {!isAdmin && (
         <div className="bg-white rounded-2xl border border-neutral-200  overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
             <h2 className="font-display font-bold text-neutral-900">Recent Listings</h2>
@@ -431,7 +410,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Quick actions (buyer) ─────────────────────────────────────── */}
-      {!isSeller && (
+      {isAdmin && false && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Link
             href="/listings"

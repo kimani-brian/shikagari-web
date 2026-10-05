@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn, formatKES, formatMileage } from "@/lib/utils";
 import { ListingCard } from "@/types";
@@ -11,6 +10,7 @@ import Icon from "@/components/ui/Icon";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompare } from "@/hooks/useCompare";
+import InquiryModal from "@/components/shared/InquiryModal";
 import toast from "react-hot-toast";
 
 interface CarCardProps {
@@ -32,9 +32,9 @@ export default function CarCard({
   onFavoriteToggle,
   className,
 }: CarCardProps) {
-  const router = useRouter();
   const { isLoggedIn } = useAuth();
   const [saved, setSaved] = useState(isFavorited);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [imgError, setImgError] = useState(false);
   const { has: inCompare, toggle: toggleCompare } = useCompare();
@@ -66,10 +66,12 @@ export default function CarCard({
     }
   };
 
+  // Stops the click from bubbling up to the card's Link, then opens the
+  // contact popup in place instead of navigating away.
   const handleInquiry = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/listings/${listing.id}`);
+    setInquiryOpen(true);
   };
 
   const handleCompare = (e: React.MouseEvent) => {
@@ -89,6 +91,7 @@ export default function CarCard({
       : null;
 
   return (
+    <>
     <Link href={`/listings/${listing.id}`} className={cn("group block car-card h-full", className)}>
       <article className="bg-white rounded-2xl border border-neutral-200 overflow-hidden h-full flex flex-col shadow-card hover:shadow-nav hover:-translate-y-0.5 transition-all duration-200">
 
@@ -201,6 +204,18 @@ export default function CarCard({
         </div>
       </article>
     </Link>
+
+    {inquiryOpen && (
+      <InquiryModal
+        listingId={listing.id}
+        vehicle={{
+          title: `${listing.year} ${listing.make} ${listing.model}`,
+          priceKES: listing.price_kes,
+        }}
+        onClose={() => setInquiryOpen(false)}
+      />
+    )}
+    </>
   );
 }
 

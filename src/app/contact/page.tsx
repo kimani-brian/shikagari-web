@@ -86,7 +86,7 @@ export default function ContactPage() {
           <div className="rounded-xl border border-neutral-200 p-6">
             <h2 className="text-base font-semibold text-neutral-900">Selling or dealer partnership?</h2>
             <p className="text-sm text-neutral-500 mt-2 leading-relaxed">
-              Create a seller account to list, or talk to us about dealer onboarding and verification.
+              List your own car from a free account, or talk to us about dealer onboarding and verification.
             </p>
             <div className="flex flex-wrap gap-3 mt-4">
               <Link href="/register">
@@ -94,7 +94,7 @@ export default function ContactPage() {
                   List your car
                 </Button>
               </Link>
-              <Link href="/dealers">
+              <Link href="/register?role=dealer">
                 <Button variant="secondary" size="md">
                   Dealer signup
                 </Button>

@@ -23,7 +23,7 @@ const BASE_NAV_ITEMS = [
 const ADMIN_NAV_ITEMS = [
   ...BASE_NAV_ITEMS,
   { label: "Admin",    href: "/dashboard/admin",           icon: ShieldCheck },
-  { label: "Sellers", href: "/dashboard/admin/verified",   icon: UserCheck   },
+  { label: "Dealers", href: "/dashboard/admin/verified",  icon: UserCheck   },
 ];
 
 export default function DashboardLayout({
@@ -34,7 +34,6 @@ export default function DashboardLayout({
   const router              = useRouter();
   const pathname            = usePathname();
   const { user, isLoggedIn, isLoading, logout } = useAuth();
-  const isSeller            = user?.role === "seller" || user?.role === "dealer";
   const dealerBusinessName  = useMyDealerBusinessName(user?.role);
   const pillLabel           = accountPillLabel(user?.role, user?.full_name, dealerBusinessName);
   const navItems = user?.role === "admin" ? ADMIN_NAV_ITEMS : BASE_NAV_ITEMS;

@@ -3,11 +3,11 @@
 import { useEffect, Children, ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, UserCheck, ArrowLeft, ExternalLink } from "lucide-react";
+import { Building2, ArrowLeft, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { useAdminDealerProfiles, useAdminPrivateSellerProfiles } from "@/hooks/useAdminProfiles";
-import { DealerProfile, PrivateSellerProfile } from "@/types";
+import { useAdminDealerProfiles } from "@/hooks/useAdminProfiles";
+import { DealerProfile } from "@/types";
 import Button from "@/components/ui/Button";
 
 export default function VerifiedSellersPage() {
@@ -15,7 +15,6 @@ export default function VerifiedSellersPage() {
   const { user, isLoggedIn, isLoading } = useAuth();
 
   const dealerData = useAdminDealerProfiles("approved");
-  const sellerData = useAdminPrivateSellerProfiles("approved");
 
   useEffect(() => {
     if (isLoading) return;
@@ -36,7 +35,7 @@ export default function VerifiedSellersPage() {
     return null;
   }
 
-  const totalVerified = dealerData.total + sellerData.total;
+  const totalVerified = dealerData.total;
 
   return (
     <div className="space-y-8">
@@ -79,18 +78,6 @@ export default function VerifiedSellersPage() {
           ))}
         </VerifiedPanel>
 
-        <VerifiedPanel
-          title="Private sellers"
-          subtitle="Individuals who completed KYC and can list cars."
-          icon={<UserCheck className="w-5 h-5" />}
-          loading={sellerData.loading}
-          error={sellerData.error}
-          emptyMessage="No approved private sellers yet."
-        >
-          {sellerData.profiles.map((profile) => (
-            <PrivateSellerRow key={profile.id} profile={profile} />
-          ))}
-        </VerifiedPanel>
       </div>
     </div>
   );
@@ -168,35 +155,6 @@ function DealerRow({ profile }: { profile: DealerProfile }) {
           <p className="font-semibold text-neutral-900">{profile.business_name}</p>
           <p className="text-sm text-neutral-500">{profile.location}</p>
           <p className="text-xs text-neutral-400">Contact: {profile.user.phone}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 text-xs text-neutral-500">
-        <span className="w-2 h-2 rounded-full bg-neutral-900 inline-block" />
-        <span>Approved {formatDate(profile.approved_at ?? profile.created_at)}</span>
-      </div>
-    </div>
-  );
-}
-
-function PrivateSellerRow({ profile }: { profile: PrivateSellerProfile }) {
-  return (
-    <div className="flex flex-col gap-4 border border-neutral-200 rounded-2xl p-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-3">
-        {profile.profile_photo_url ? (
-          <img
-            src={profile.profile_photo_url}
-            alt={profile.user.full_name}
-            className="w-12 h-12 rounded-xl object-cover border border-neutral-200"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-400">
-            <UserCheck className="w-5 h-5" />
-          </div>
-        )}
-        <div>
-          <p className="font-semibold text-neutral-900">{profile.user.full_name}</p>
-          <p className="text-sm text-neutral-500">{profile.location}</p>
-          <p className="text-xs text-neutral-400">National ID: {profile.national_id_no}</p>
         </div>
       </div>
       <div className="flex items-center gap-2 text-xs text-neutral-500">

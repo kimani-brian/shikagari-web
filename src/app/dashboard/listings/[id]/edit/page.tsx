@@ -4,12 +4,13 @@ import { useState, useEffect, useRef, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useListing } from "@/hooks/useListings";
 import api from "@/lib/api";
+import { API_ORIGIN } from "@/lib/config";
 import Input, { Textarea, SelectField } from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { ListingStatusBadge } from "@/components/ui/Badge";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import toast from "react-hot-toast";
-import { ArrowLeft, AlertCircle, Car, Upload, X } from "lucide-react";
+import { ArrowLeft, AlertCircle, Car, Upload, X, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +21,16 @@ import {
   DRIVETRAINS,
 } from "@/lib/vehicles";
 import { KENYAN_COUNTIES } from "@/lib/locations";
+
+// Pulls the server-provided message out of an axios rejection without
+// resorting to `any`.
+function apiErrorMessage(err: unknown, fallback: string): string {
+  if (typeof err === "object" && err !== null && "response" in err) {
+    const { response } = err as { response?: { data?: { message?: string } } };
+    if (response?.data?.message) return response.data.message;
+  }
+  return fallback;
+}
 
 const STATUSES      = ["active","inactive","sold"];
 const CURRENT_YEAR  = new Date().getFullYear();
@@ -52,6 +63,11 @@ export default function EditListingPage() {
   const [imageFiles,    setImageFiles]    = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [coverBusy,     setCoverBusy]     = useState(false);
+  const [localCover,    setLocalCover]    = useState<string | null>(null);
+  const [elogbook,      setELogbook]      = useState<File | null>(null);
+  const [elogbookError, setELogbookError] = useState("");
+  const [elogbookBusy,  setELogbookBusy]  = useState(false);
 
   // Populate form when listing loads — only once. A late or duplicate fetch
   // must never overwrite what the user has already typed.
@@ -105,6 +121,13 @@ export default function EditListingPage() {
 
   const existingCount = listing?.images?.length ?? 0;
 
+  // A buyer listing is only live once an admin approved the e-logbook, so the
+  // owner cannot flip it back to "active" themselves.
+  const awaitingReview = listing?.seller_type !== "dealer" && listing?.verification_status !== "approved";
+  const availableStatuses = awaitingReview
+    ? STATUSES.filter((s) => s !== "active")
+    : STATUSES;
+
   // ── Multi-image handling ─────────────────────────────────────────────
   const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -134,6 +157,28 @@ export default function EditListingPage() {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // The card thumbnail is whichever photo the seller picks here.
+  // localCover mirrors the server value so the badge moves on click without
+  // waiting for the refetch to land.
+  const currentCover = localCover ?? listing?.cover_image ?? listing?.images?.[0] ?? null;
+
+  const handleSetCover = async (imageUrl: string) => {
+    if (imageUrl === currentCover || coverBusy) return;
+    try {
+      setCoverBusy(true);
+      const res = await api.patch(`/listings/${id}/cover`, { image_url: imageUrl });
+      toast.success("Thumbnail updated");
+      // Keep local state in step so the badge moves immediately.
+      setLocalCover(res.data.data.cover_image || imageUrl);
+      await refetch();
+    } catch (err: unknown) {
+      const data = (err as { response?: { data?: { message?: string } } })?.response?.data;
+      toast.error(data?.message ?? "Could not update the thumbnail.");
+    } finally {
+      setCoverBusy(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (imageFiles.length === 0) return;
     try {
@@ -152,6 +197,45 @@ export default function EditListingPage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleELogbookUpload = async () => {
+    if (!elogbook) return;
+    try {
+      setELogbookBusy(true);
+      setELogbookError("");
+      const formData = new FormData();
+      formData.append("elogbook", elogbook);
+      await api.post(`/listings/${id}/elogbook`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("E-logbook uploaded — your listing is back in the review queue.");
+      setELogbook(null);
+      await refetch();
+    } catch (err: unknown) {
+      const msg = apiErrorMessage(err, "Failed to upload your e-logbook.");
+      setELogbookError(msg);
+      toast.error(msg);
+    } finally {
+      setELogbookBusy(false);
+    }
+  };
+
+  const handleELogbookPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+    if (!allowed.includes(file.type)) {
+      setELogbookError("E-logbook must be a JPEG, PNG, WebP, or PDF file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setELogbookError("E-logbook must be 5MB or smaller");
+      return;
+    }
+    setELogbookError("");
+    setELogbook(file);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -381,11 +465,69 @@ export default function EditListingPage() {
           {/* Right col */}
           <div className="space-y-5">
 
+            {/* NTSA e-logbook — buyers only, until approved */}
+            {awaitingReview && listing && (
+              <div className="bg-white rounded-2xl p-5 border border-neutral-200 space-y-3">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="font-display font-bold text-neutral-900 text-sm">NTSA e-logbook</h3>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      {listing.verification_status === "rejected"
+                        ? "Your listing was rejected. Upload a corrected e-logbook to resubmit."
+                        : listing.verification_elogbook_url
+                          ? "Your e-logbook is with our review team."
+                          : "Upload your e-logbook to submit this listing for review."}
+                    </p>
+                  </div>
+                </div>
+
+                {listing.verification_status === "rejected" && listing.rejection_reason && (
+                  <div className="rounded-xl bg-red-50 border border-red-200 p-3">
+                    <p className="text-xs font-semibold text-red-800 mb-0.5">Reason given</p>
+                    <p className="text-xs text-red-700">{listing.rejection_reason}</p>
+                  </div>
+                )}
+
+                <label className={cn(
+                  "flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all",
+                  elogbook
+                    ? "border-neutral-900 bg-neutral-50"
+                    : "border-slate-300 hover:border-brand-400 hover:bg-neutral-50"
+                )}>
+                  <p className="text-sm font-semibold text-neutral-700">
+                    {elogbook ? elogbook.name : "Choose e-logbook file"}
+                  </p>
+                  <p className="text-xs text-neutral-400">Photo or PDF — max 5MB</p>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    onChange={handleELogbookPick}
+                    className="sr-only"
+                  />
+                </label>
+
+                {elogbookError && <p className="text-xs text-red-600">{elogbookError}</p>}
+
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  fullWidth
+                  disabled={!elogbook}
+                  loading={elogbookBusy}
+                  onClick={handleELogbookUpload}
+                >
+                  Submit e-logbook for review
+                </Button>
+              </div>
+            )}
+
             {/* Status */}
             <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
               <h3 className="font-display font-bold text-neutral-900 mb-3">Listing Status</h3>
               <div className="space-y-2">
-                {STATUSES.map((s) => (
+                {availableStatuses.map((s) => (
                   <button
                     key={s} type="button" onClick={() => setStatus(s)}
                     className={cn(
@@ -413,20 +555,46 @@ export default function EditListingPage() {
                 Photos ({existingCount + imageFiles.length} / 10)
               </h3>
               <p className="text-xs text-neutral-500 mb-4">
-                Select multiple photos at once. They upload alongside the existing ones.
+                Tap a photo to make it the card thumbnail. Add more photos below.
               </p>
 
               {existingCount > 0 && (
                 <div className="grid grid-cols-3 gap-2 mb-3">
-                  {listing.images.slice(0, 6).map((img, i) => (
-                    <div key={`existing-${i}`} className="aspect-square rounded-xl overflow-hidden bg-neutral-100">
-                      <img
-                        src={img.startsWith("http") ? img : `${process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "")}${img}`}
-                        alt={`Image ${i + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
+                  {listing.images.slice(0, 9).map((img, i) => {
+                    const isCover = img === currentCover;
+                    return (
+                      <button
+                        key={`existing-${i}`}
+                        type="button"
+                        onClick={() => handleSetCover(img)}
+                        disabled={coverBusy}
+                        aria-pressed={isCover}
+                        aria-label={isCover ? "Current thumbnail" : `Use photo ${i + 1} as thumbnail`}
+                        className={cn(
+                          "relative aspect-square rounded-xl overflow-hidden bg-neutral-100 group transition-all",
+                          isCover
+                            ? "ring-2 ring-neutral-900 ring-offset-1"
+                            : "opacity-75 hover:opacity-100",
+                          coverBusy && "cursor-wait"
+                        )}
+                      >
+                        <img
+                          src={img.startsWith("http") ? img : `${API_ORIGIN}${img}`}
+                          alt={`Image ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {isCover ? (
+                          <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-neutral-900 text-white text-[9px] font-bold rounded-md">
+                            Thumbnail
+                          </span>
+                        ) : (
+                          <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-white/90 text-neutral-700 text-[9px] font-semibold rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Set as thumbnail
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 

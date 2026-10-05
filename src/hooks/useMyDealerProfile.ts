@@ -43,7 +43,7 @@ export function useMyDealerBusinessName(role?: string): string | null {
 }
 
 // Label for the account pill under the user card.
-// Dealers see their dealership name; private sellers see "Private seller".
+// Dealers see their dealership name; everyone else sees their role.
 // Returns null when the label would repeat the user's full name,
 // so callers can hide the pill instead of duplicating text.
 export function accountPillLabel(
@@ -61,6 +61,5 @@ export function accountPillLabel(
     }
     return dealerBusinessName?.trim() ? dealerBusinessName : "Dealer";
   }
-  if (role === "seller") return "Private seller";
   return role ?? null;
 }

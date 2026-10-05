@@ -6,7 +6,7 @@ import Icon from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Simple pricing for buyers, private sellers, and dealers on ShikaGari.",
+  description: "Simple pricing for buyers, individual sellers, and dealers on ShikaGari.",
 };
 
 const PLANS = [
@@ -18,10 +18,10 @@ const PLANS = [
     cta: { label: "Vehicles", href: "/listings" },
   },
   {
-    name: "Private sellers",
+    name: "Individual sellers",
     price: "Free",
-    copy: "List your car after admin verification.",
-    features: ["Create listings", "Manage inquiries in dashboard", "Edit or remove anytime"],
+    copy: "List from your own account. An admin verifies your NTSA e-logbook before it goes live.",
+    features: ["Unlimited listings", "NTSA e-logbook verification", "Manage inquiries in dashboard"],
     cta: { label: "List your car", href: "/register" },
   },
   {
@@ -29,7 +29,7 @@ const PLANS = [
     price: "Custom",
     copy: "Showroom profile plus inventory tools. Talk to us about onboarding.",
     features: ["Verified dealer profile", "Multiple listings", "Partnership support"],
-    cta: { label: "Dealer signup", href: "/dealers" },
+    cta: { label: "Dealer signup", href: "/register?role=dealer" },
   },
 ];
 

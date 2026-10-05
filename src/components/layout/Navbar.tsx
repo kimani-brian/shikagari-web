@@ -44,6 +44,11 @@ export default function Navbar() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href.split("?")[0]);
 
+  // Guests get pointed at registration; buyers go straight to their listing
+  // form. Dealers and admins have their own entry points in the dashboard.
+  const showSell = !isLoggedIn || user?.role === "buyer";
+  const sellHref = isLoggedIn ? "/dashboard/listings/new" : "/register";
+
   return (
     <>
       <header
@@ -85,6 +90,20 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isLoggedIn ? (
               <>
+                {showSell && (
+                  <Link
+                    href={sellHref}
+                    className={cn(
+                      "px-5 py-2.5 rounded-full text-sm font-medium",
+                      "bg-white text-neutral-900",
+                      "hover:bg-neutral-200",
+                      "transition-colors duration-150"
+                    )}
+                  >
+                    Sell
+                  </Link>
+                )}
+
                 <div className="relative" ref={dropRef}>
                   <button
                     onClick={() => setDropOpen((v) => !v)}
@@ -160,25 +179,17 @@ export default function Navbar() {
                 </div>
               </>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/register"
-                  className={cn(
-                    "px-5 py-2.5 rounded-full text-sm font-medium",
-                    "bg-white text-neutral-900",
-                    "hover:bg-neutral-200",
-                    "transition-colors duration-150"
-                  )}
-                >
-                  Get started
-                </Link>
-              </>
+              <Link
+                href="/register"
+                className={cn(
+                  "px-5 py-2.5 rounded-full text-sm font-medium",
+                  "bg-white text-neutral-900",
+                  "hover:bg-neutral-200",
+                  "transition-colors duration-150"
+                )}
+              >
+                Sell
+              </Link>
             )}
           </div>
 
@@ -230,6 +241,15 @@ export default function Navbar() {
                       <p className="text-xs text-neutral-400 capitalize">{user?.role}</p>
                     </div>
                   </div>
+                  {showSell && (
+                    <Link
+                      href={sellHref}
+                      className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-neutral-900 bg-white hover:bg-neutral-200"
+                    >
+                      <Icon name="storefront" size={18} />
+                      Sell your car
+                    </Link>
+                  )}
                   <Link
                     href="/dashboard"
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white hover:bg-white/10"
@@ -246,20 +266,12 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <Link
-                    href="/login"
-                    className="py-3 rounded-full text-sm font-medium text-white border border-white/20 text-center hover:bg-white/10"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="py-3 rounded-full text-sm font-medium text-neutral-900 bg-white text-center hover:bg-neutral-200"
-                  >
-                    Get started
-                  </Link>
-                </div>
+                <Link
+                  href="/register"
+                  className="block py-3 rounded-xl text-sm font-medium text-neutral-900 bg-white text-center hover:bg-neutral-200"
+                >
+                  Sell
+                </Link>
               )}
             </div>
           </div>

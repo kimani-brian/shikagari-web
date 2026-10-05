@@ -53,9 +53,7 @@ export default function DealerProfileForm() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  // Dealer accounts manage this page; legacy seller accounts keep access to
-  // their existing profiles (the API strictly enforces dealer role on create).
-  const isSeller = user?.role === "dealer" || user?.role === "seller" || user?.role === "admin";
+  const isSeller = user?.role === "dealer" || user?.role === "admin";
 
   const loadProfile = useCallback(async () => {
     if (!isSeller) return;

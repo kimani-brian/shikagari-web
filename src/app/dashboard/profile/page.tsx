@@ -11,22 +11,20 @@ import { User } from "lucide-react";
 import Link from "next/link";
 import { ApprovalStatus } from "@/types";
 
-interface SellerProfileState {
-  kind: "dealer" | "seller";
+interface DealerProfileState {
   status: ApprovalStatus;
 }
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
-  const isSeller = user?.role === "seller" || user?.role === "dealer";
   const isDealer = user?.role === "dealer";
 
   const [fullName,     setFullName]     = useState(user?.full_name ?? "");
   const [email,        setEmail]        = useState(user?.email     ?? "");
   const [phone,        setPhone]        = useState(user?.phone     ?? "");
   const [profileLoading, setProfileLoading] = useState(false);
-  const [sellerProfile, setSellerProfile] = useState<SellerProfileState | null>(null);
-  const [checkingSellerProfile, setCheckingSellerProfile] = useState(true);
+  const [dealerProfile, setDealerProfile] = useState<DealerProfileState | null>(null);
+  const [checkingDealerProfile, setCheckingDealerProfile] = useState(true);
 
   // Fill in once the session hydrates (AuthContext loads from storage on mount).
   useEffect(() => {
@@ -37,38 +35,28 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  // Load verification status: dealer profile first, private seller fallback
-  // (mirrors the status check on the dashboard overview page).
+  // Dealer profile verification status (mirrors the dashboard overview check).
   useEffect(() => {
-    if (!isSeller) {
-      setCheckingSellerProfile(false);
+    if (!isDealer) {
+      setCheckingDealerProfile(false);
       return;
     }
     let cancelled = false;
     (async () => {
       try {
-        try {
-          const dealerRes = await api.get("/dealers/profile");
-          if (!cancelled && dealerRes.data.data) {
-            setSellerProfile({ kind: "dealer", status: dealerRes.data.data.approval_status ?? "pending" });
-            return;
-          }
-        } catch { /* try private seller profile next */ }
-        try {
-          const sellerRes = await api.get("/sellers/profile");
-          if (!cancelled && sellerRes.data.data) {
-            setSellerProfile({ kind: "seller", status: sellerRes.data.data.approval_status ?? "pending" });
-          }
-        } catch { /* no profile yet */ }
-      } finally {
-        // Guaranteed on every path — the card can never stick on "Checking status…".
-        if (!cancelled) setCheckingSellerProfile(false);
+        const dealerRes = await api.get("/dealers/profile");
+        if (!cancelled && dealerRes.data.data) {
+          setDealerProfile({ status: dealerRes.data.data.approval_status ?? "pending" });
+        }
+      } catch { /* no profile yet */ }
+      finally {
+        if (!cancelled) setCheckingDealerProfile(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [isSeller]);
+  }, [isDealer]);
 
   const saveProfile = async (name: string, mail: string, phoneNumber: string) => {
     if (profileLoading) return;
@@ -161,31 +149,28 @@ export default function ProfilePage() {
         {/* Right sidebar */}
         <div className="space-y-5">
 
-          {/* Seller profile status */}
-          {isSeller && (
+          {/* Dealer profile status */}
+          {isDealer && (
             <div className="bg-white rounded-2xl p-5 border border-neutral-200 ">
               <div className="mb-4">
                 <h3 className="font-display font-bold text-neutral-900 text-sm">Profile</h3>
               </div>
-              {checkingSellerProfile ? (
+              {checkingDealerProfile ? (
                 <p className="text-xs text-neutral-400">Checking status…</p>
-              ) : sellerProfile ? (
+              ) : dealerProfile ? (
                 <div className="space-y-3">
-                  <ApprovalBadge status={sellerProfile.status} />
+                  <ApprovalBadge status={dealerProfile.status} />
                   <p className="text-xs text-neutral-500 leading-relaxed">
-                    {sellerProfile.status === "pending" &&
+                    {dealerProfile.status === "pending" &&
                       "Under review. You can edit your details while you wait."}
-                    {sellerProfile.status === "rejected" &&
+                    {dealerProfile.status === "rejected" &&
                       "Not approved. Update your details or contact support for another review."}
                   </p>
-                  <Link
-                    href={sellerProfile.kind === "dealer" ? "/dealers/profile/new" : "/sellers/profile/new"}
-                    className="block"
-                  >
+                  <Link href="/dealers/profile/new" className="block">
                     <Button variant="secondary" size="sm" fullWidth>
-                      {sellerProfile.status === "approved"
+                      {dealerProfile.status === "approved"
                         ? "Edit profile"
-                        : sellerProfile.status === "pending"
+                        : dealerProfile.status === "pending"
                           ? "View submission"
                           : "Update details"}
                     </Button>
@@ -194,14 +179,9 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   <p className="text-xs text-neutral-500 leading-relaxed">
-                    {isDealer
-                      ? "Create your dealership profile to get verified and start listing."
-                      : "Create your seller profile to get verified and start listing."}
+                    Create your dealership profile to get verified and start listing.
                   </p>
-                  <Link
-                    href={isDealer ? "/dealers/profile/new" : "/sellers/profile/new"}
-                    className="block"
-                  >
+                  <Link href="/dealers/profile/new" className="block">
                     <Button variant="primary" size="sm" fullWidth>
                       Create profile
                     </Button>
