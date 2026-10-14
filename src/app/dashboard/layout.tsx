@@ -8,7 +8,7 @@ import { accountPillLabel, useMyDealerBusinessName } from "@/hooks/useMyDealerPr
 import { cn } from "@/lib/utils";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import {
-  LayoutDashboard, Car, PlusCircle, MessageSquare,
+  LayoutDashboard, Car, PlusCircle, MessageSquare, Heart,
   User, ShieldCheck, UserCheck, LogOut, ChevronRight, Bell
 } from "lucide-react";
 
@@ -16,6 +16,7 @@ const BASE_NAV_ITEMS = [
   { label: "Overview",      href: "/dashboard",               icon: LayoutDashboard },
   { label: "My Listings",   href: "/dashboard/listings",      icon: Car             },
   { label: "New Listing",   href: "/dashboard/listings/new",  icon: PlusCircle      },
+  { label: "Saved Cars",    href: "/dashboard/saved",         icon: Heart            },
   { label: "Inbox",         href: "/dashboard/inbox",         icon: MessageSquare   },
   { label: "Profile",       href: "/dashboard/profile",       icon: User            },
 ];

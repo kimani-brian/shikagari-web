@@ -158,6 +158,7 @@ export default function Navbar() {
                       <div className="py-1">
                         <DropItem href="/dashboard" icon="dashboard" label="Dashboard" />
                         <DropItem href="/dashboard/listings" icon="directions_car" label="My listings" />
+                        <DropItem href="/dashboard/saved" icon="favorite" label="Saved cars" />
                         <DropItem href="/dashboard/inbox" icon="chat_bubble" label="Inbox" />
                         <DropItem href="/dashboard/profile" icon="person" label="Profile" />
                       </div>
@@ -250,6 +251,13 @@ export default function Navbar() {
                       Sell your car
                     </Link>
                   )}
+                  <Link
+                    href="/dashboard/saved"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white hover:bg-white/10"
+                  >
+                    <Icon name="favorite" size={18} />
+                    Saved cars
+                  </Link>
                   <Link
                     href="/dashboard"
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white hover:bg-white/10"

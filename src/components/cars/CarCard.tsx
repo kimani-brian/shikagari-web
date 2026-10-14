@@ -183,9 +183,9 @@ export default function CarCard({
               size="sm"
               onClick={handleInquiry}
               leftIcon={<Icon name="chat_bubble" size={16} className="text-white" />}
-              className="flex-1"
+              className="flex-1 min-w-0"
             >
-              Send Inquiry
+              <span className="truncate">Send Inquiry</span>
             </Button>
             <button
               onClick={handleCompare}
