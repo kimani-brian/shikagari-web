@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { auctionSocketUrl } from "@/lib/auction";
+import { AUCTION_API_URL, auctionSocketUrl } from "@/lib/auction";
 import { useAuth } from "@/contexts/AuthContext";
 
 export type RoomConnection = "connecting" | "live" | "reconnecting" | "offline";
@@ -24,6 +24,7 @@ export interface RoomState {
 	iLead: boolean;
 	outbidNotice: string | null;
 	extendedFlash: boolean;
+	reserveMet: boolean | null;
 	result: { outcome: string; price: number } | null;
 }
 
@@ -49,8 +50,35 @@ export function useAuctionRoom(lotId: string) {
 		iLead: false,
 		outbidNotice: null,
 		extendedFlash: false,
+		reserveMet: null,
 		result: null,
 	});
+	// Your pre-bid ceiling on this lot, when you have one. The room shows it
+	// as "auto-bidding to your max" so a proxy answer never surprises you.
+	const [myMax, setMyMax] = useState<number | null>(null);
+
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			try {
+				const token = localStorage.getItem("shikagari_token");
+				if (!token) return;
+				const res = await fetch(`${AUCTION_API_URL}/me/lots/${lotId}/pre-bids`, {
+					headers: { Authorization: `Bearer ${token}` },
+				});
+				if (!res.ok) return;
+				const body = await res.json();
+				if (!cancelled && body?.data?.max_amount_kes) {
+					setMyMax(Number(body.data.max_amount_kes));
+				}
+			} catch {
+				// No ceiling, or offline — the room works without it.
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [lotId]);
 	const [rejection, setRejection] = useState<string | null>(null);
 	const [sending, setSending] = useState(false);
 
@@ -71,8 +99,11 @@ export function useAuctionRoom(lotId: string) {
 				setState((prev) => ({
 					...prev,
 					price: Number(d.current_price ?? prev.price),
+					iLead: Boolean(d.you_lead),
 					version: msg.version ?? prev.version,
 					deadlineAt: d.deadline_at ? Date.parse(String(d.deadline_at)) : null,
+					reserveMet:
+						typeof d.reserve_met === "boolean" ? (d.reserve_met as boolean) : prev.reserveMet,
 					result:
 						String(d.status ?? "") === "sold" ||
 						String(d.status ?? "") === "pending_approval" ||
@@ -93,6 +124,10 @@ export function useAuctionRoom(lotId: string) {
 						...prev,
 						price: Number(d.amount_kes ?? prev.price),
 						version: msg.version ?? prev.version,
+						reserveMet:
+							typeof d.reserve_met === "boolean"
+								? (d.reserve_met as boolean)
+								: prev.reserveMet,
 						deadlineAt: d.deadline_at ? Date.parse(String(d.deadline_at)) : prev.deadlineAt,
 						leaderId: bidderId || null,
 						iLead: !!uid && bidderId === uid,
@@ -268,5 +303,5 @@ export function useAuctionRoom(lotId: string) {
 
 	const clearRejection = useCallback(() => setRejection(null), []);
 
-	return { connection, state, rejection, sending, placeBid, clearRejection };
+	return { connection, state, myMax, rejection, sending, placeBid, clearRejection };
 }

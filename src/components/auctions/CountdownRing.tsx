@@ -14,11 +14,11 @@ interface CountdownRingProps {
 // client interpolates locally and corrects on every tick — it never invents
 // time.
 export default function CountdownRing({ deadlineAt, size = 120 }: CountdownRingProps) {
-	const [, force] = useState(0);
+	const [now, setNow] = useState(() => Date.now());
 
 	useEffect(() => {
 		if (deadlineAt == null) return;
-		const id = setInterval(() => force((n) => n + 1), 250);
+		const id = setInterval(() => setNow(Date.now()), 250);
 		return () => clearInterval(id);
 	}, [deadlineAt]);
 
@@ -33,7 +33,7 @@ export default function CountdownRing({ deadlineAt, size = 120 }: CountdownRingP
 		);
 	}
 
-	const remainingMs = Math.max(0, deadlineAt - Date.now());
+	const remainingMs = deadlineAt == null ? 0 : Math.max(0, deadlineAt - now);
 	const remaining = Math.ceil(remainingMs / 1000);
 	const total = 60;
 	const frac = Math.min(1, remainingMs / (total * 1000));

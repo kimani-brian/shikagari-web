@@ -9,8 +9,8 @@ import { useBuyingPower } from "@/hooks/useAuctions";
 import PageWrapper from "@/components/layout/PageWrapper";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import BuyingPowerMeter from "@/components/auctions/BuyingPowerMeter";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { formatKES } from "@/lib/utils";
 
 export default function BuyingPowerPage() {
 	const { isLoggedIn } = useAuth();
@@ -83,17 +83,13 @@ export default function BuyingPowerPage() {
 					held. Money locked on a bid is released the moment you are outbid.
 				</p>
 
-				<div className="mt-6 rounded-2xl border border-neutral-200 p-5 space-y-2">
-					<PowerRow label="Deposited" value={formatKES(power?.deposited_kes ?? 0)} />
-					<PowerRow label="Held on bids" value={formatKES(power?.held_kes ?? 0)} />
-					<PowerRow label="Free" value={formatKES(power?.available_kes ?? 0)} strong />
-					<p className="text-xs text-neutral-400 pt-1">
-						Right now this covers bids up to{" "}
-						<span className="font-semibold text-neutral-700">
-							{formatKES(power?.max_bid_kes ?? 0)}
-						</span>
-						.
-					</p>
+				<div className="mt-6">
+					<BuyingPowerMeter
+						deposited={power?.deposited_kes ?? 0}
+						held={power?.held_kes ?? 0}
+						ratioPercent={power?.ratio_percent}
+						tier={power?.tier}
+					/>
 				</div>
 
 				<div className="mt-4 rounded-2xl border border-neutral-200 p-5 space-y-3">
@@ -126,17 +122,6 @@ export default function BuyingPowerPage() {
 					</p>
 				</div>
 			</PageWrapper>
-		</div>
-	);
-}
-
-function PowerRow({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-	return (
-		<div className="flex items-center justify-between">
-			<span className="text-neutral-500 text-sm">{label}</span>
-			<span className={strong ? "text-base font-bold text-neutral-900" : "text-sm font-medium text-neutral-700"}>
-				{value}
-			</span>
 		</div>
 	);
 }

@@ -11,6 +11,8 @@ import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import Input from "@/components/ui/Input";
 import CountdownRing from "@/components/auctions/CountdownRing";
+import BuyingPowerMeter from "@/components/auctions/BuyingPowerMeter";
+import { useBuyingPower } from "@/hooks/useAuctions";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { formatKES } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -19,17 +21,22 @@ export default function AuctionRoomPage() {
 	const { lotId } = useParams<{ lotId: string }>();
 	const { isLoggedIn } = useAuth();
 	const { lot } = useAuctionLot(lotId);
-	const { connection, state, rejection, sending, placeBid, clearRejection } =
+	const { connection, state, myMax, rejection, sending, placeBid, clearRejection } =
 		useAuctionRoom(lotId);
+	const { power } = useBuyingPower();
 	const [custom, setCustom] = useState("");
 	const [flash, setFlash] = useState(false);
 
-	// The soft-close flash is momentary by design.
+	// The soft-close flash is momentary by design. Both state changes live
+	// in timer callbacks, never in the effect body.
 	useEffect(() => {
 		if (!state.extendedFlash) return;
-		setFlash(true);
-		const id = setTimeout(() => setFlash(false), 2500);
-		return () => clearTimeout(id);
+		const show = setTimeout(() => setFlash(true), 0);
+		const hide = setTimeout(() => setFlash(false), 2500);
+		return () => {
+			clearTimeout(show);
+			clearTimeout(hide);
+		};
 	}, [state.extendedFlash, state.version]);
 
 	const vehicle = (lot?.vehicle ?? {}) as Record<string, string | number | string[]>;
@@ -102,6 +109,16 @@ export default function AuctionRoomPage() {
 								<p className="text-xs text-neutral-400 mt-1">
 									{state.version >= 0 ? `${state.version} bids` : "Waiting for the room…"}
 								</p>
+								{state.reserveMet != null && (
+									<p
+										className={cn(
+											"text-xs font-semibold mt-1",
+											state.reserveMet ? "text-green-700" : "text-amber-700"
+										)}
+									>
+										{state.reserveMet ? "Reserve met" : "Below reserve"}
+									</p>
+								)}
 							</div>
 						</div>
 
@@ -162,6 +179,15 @@ export default function AuctionRoomPage() {
 								</Link>
 							) : (
 								<div className="space-y-3">
+									{myMax != null && (
+										<p className="rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2 text-xs text-neutral-600">
+											Auto-bidding to your max of{" "}
+											<span className="font-semibold text-neutral-900">
+												{formatKES(myMax)}
+											</span>
+											. You will never pay more than this.
+										</p>
+									)}
 									<Button
 										variant="primary"
 										fullWidth
@@ -211,6 +237,15 @@ export default function AuctionRoomPage() {
 							)}
 						</div>
 
+						{power && (
+							<BuyingPowerMeter
+								deposited={power.deposited_kes}
+								held={power.held_kes}
+								ratioPercent={power.ratio_percent}
+								tier={power.tier}
+								compact
+							/>
+						)}
 						<div className="rounded-2xl bg-neutral-50 border border-neutral-200 p-4">
 							<p className="text-xs text-neutral-500 leading-relaxed">
 								Sold by ShikaGari as auctioneer. Bids inside the final

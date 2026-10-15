@@ -78,4 +78,6 @@ export interface BuyingPower {
 	held_kes: number;
 	available_kes: number;
 	max_bid_kes: number;
+	ratio_percent: number;
+	tier: "buyer" | "dealer";
 }
