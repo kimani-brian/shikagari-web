@@ -94,9 +94,14 @@ export default function AdminApprovalsPage() {
             Review dealer profiles and verify buyer listings. Buyers list from their own account once you approve their NTSA e-logbook.
           </p>
         </div>
-        <Link href="/dealers" className="text-sm font-semibold text-neutral-900 hover:text-brand-800">
-          View public dealer page →
-        </Link>
+        <div className="flex flex-col gap-1 items-start lg:items-end">
+          <Link href="/dashboard/admin/auctions" className="text-sm font-semibold text-neutral-900 hover:text-brand-800">
+            Auction sessions →
+          </Link>
+          <Link href="/dealers" className="text-sm font-semibold text-neutral-500 hover:text-neutral-900">
+            View public dealer page →
+          </Link>
+        </div>
       </header>
 
       <div className="space-y-6">

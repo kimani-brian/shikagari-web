@@ -9,6 +9,7 @@ import Icon from "@/components/ui/Icon";
 
 const NAV_LINKS = [
   { label: "Vehicles", href: "/listings" },
+  { label: "Auctions", href: "/auctions" },
   { label: "Showrooms", href: "/dealers" },
   { label: "About", href: "/about" },
 ];

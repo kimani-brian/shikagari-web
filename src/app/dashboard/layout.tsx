@@ -8,7 +8,7 @@ import { accountPillLabel, useMyDealerBusinessName } from "@/hooks/useMyDealerPr
 import { cn } from "@/lib/utils";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import {
-  LayoutDashboard, Car, PlusCircle, MessageSquare, Heart,
+  LayoutDashboard, Car, PlusCircle, MessageSquare, Heart, Gavel, Wallet,
   User, ShieldCheck, UserCheck, LogOut, ChevronRight, Bell
 } from "lucide-react";
 
@@ -17,14 +17,21 @@ const BASE_NAV_ITEMS = [
   { label: "My Listings",   href: "/dashboard/listings",      icon: Car             },
   { label: "New Listing",   href: "/dashboard/listings/new",  icon: PlusCircle      },
   { label: "Saved Cars",    href: "/dashboard/saved",         icon: Heart            },
+  { label: "My Bids",       href: "/auctions/me/bids",        icon: Gavel           },
+  { label: "Buying Power",  href: "/auctions/me/power",       icon: Wallet          },
   { label: "Inbox",         href: "/dashboard/inbox",         icon: MessageSquare   },
   { label: "Profile",       href: "/dashboard/profile",       icon: User            },
+];
+
+const DEALER_NAV_ITEMS = [
+  { label: "Auction a Car", href: "/dealer/auctions/new",     icon: Gavel           },
 ];
 
 const ADMIN_NAV_ITEMS = [
   ...BASE_NAV_ITEMS,
   { label: "Admin",    href: "/dashboard/admin",           icon: ShieldCheck },
   { label: "Dealers", href: "/dashboard/admin/verified",  icon: UserCheck   },
+  { label: "Auctions", href: "/dashboard/admin/auctions", icon: Gavel       },
 ];
 
 export default function DashboardLayout({
@@ -37,7 +44,12 @@ export default function DashboardLayout({
   const { user, isLoggedIn, isLoading, logout } = useAuth();
   const dealerBusinessName  = useMyDealerBusinessName(user?.role);
   const pillLabel           = accountPillLabel(user?.role, user?.full_name, dealerBusinessName);
-  const navItems = user?.role === "admin" ? ADMIN_NAV_ITEMS : BASE_NAV_ITEMS;
+  const navItems =
+    user?.role === "admin"
+      ? ADMIN_NAV_ITEMS
+      : user?.role === "dealer"
+        ? [...BASE_NAV_ITEMS.slice(0, 3), ...DEALER_NAV_ITEMS, ...BASE_NAV_ITEMS.slice(3)]
+        : BASE_NAV_ITEMS;
 
   // Redirect unauthenticated users
   useEffect(() => {
