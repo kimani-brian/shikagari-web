@@ -37,6 +37,11 @@ export default function AdminAuctionsPage() {
 	const [schedLane, setSchedLane] = useState("");
 	const [schedAt, setSchedAt] = useState("");
 	const [schedBusy, setSchedBusy] = useState(false);
+	const [openLotId, setOpenLotId] = useState("");
+	const [openSession, setOpenSession] = useState("");
+	const [openLane, setOpenLane] = useState("");
+	const [openLanes, setOpenLanes] = useState<{ id: string; code: string; name: string }[]>([]);
+	const [openBusy, setOpenBusy] = useState(false);
 
 	const [licenseNumber, setLicenseNumber] = useState("");
 	const [licenseBusy, setLicenseBusy] = useState(false);
@@ -147,6 +152,46 @@ export default function AdminAuctionsPage() {
 			toast.error(errMsg(err, "Could not add the lane."));
 		} finally {
 			setLaneBusy(false);
+		}
+	};
+
+	useEffect(() => {
+		if (!openSession) {
+			setOpenLanes([]);
+			setOpenLane("");
+			return;
+		}
+		let cancelled = false;
+		(async () => {
+			try {
+				const res = await auctionApi.get(`/auctions/${openSession}`);
+				if (!cancelled) setOpenLanes(res.data.data.lanes ?? []);
+			} catch {
+				if (!cancelled) setOpenLanes([]);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [openSession]);
+
+	const openLotNow = async () => {
+		if (!openLotId.trim() || !openLane) {
+			toast.error("Pick a lot and the lane to open it in.");
+			return;
+		}
+		try {
+			setOpenBusy(true);
+			await auctionApi.post(`/admin/lots/${openLotId.trim()}/open`, {
+				lane_id: openLane,
+				session_id: openSession || undefined,
+			});
+			toast.success("Lot is on the block.");
+			setOpenLotId("");
+		} catch (err: unknown) {
+			toast.error(errMsg(err, "Could not open the lot."));
+		} finally {
+			setOpenBusy(false);
 		}
 	};
 
@@ -364,6 +409,52 @@ export default function AdminAuctionsPage() {
 				</div>
 				<Button variant="primary" loading={schedBusy} onClick={scheduleLot}>
 					Schedule lot
+				</Button>
+			</div>
+
+			<div className="bg-white rounded-2xl border border-neutral-200 p-6 space-y-4">
+				<h2 className="font-display text-xl text-neutral-900">Open a lot</h2>
+				<p className="text-xs text-neutral-500">
+					Putting a lot on the block starts its clock and wakes its lane.
+				</p>
+				<Input
+					label="Lot id"
+					value={openLotId}
+					onChange={(e) => setOpenLotId(e.target.value)}
+					placeholder="Paste the lot UUID"
+					required
+				/>
+				<SelectField
+					label="Session"
+					value={openSession}
+					onChange={(e) => setOpenSession(e.target.value)}
+					options={[
+						{ value: "", label: "No session (lane only)" },
+						...sessions.map((s) => ({ value: s.id, label: s.name })),
+					]}
+				/>
+				{openLanes.length > 0 ? (
+					<SelectField
+						label="Lane"
+						value={openLane}
+						onChange={(e) => setOpenLane(e.target.value)}
+						options={[
+							{ value: "", label: "Select a lane" },
+							...openLanes.map((l) => ({ value: l.id, label: `Lane ${l.code} — ${l.name}` })),
+						]}
+						required
+					/>
+				) : (
+					<Input
+						label="Lane id"
+						value={openLane}
+						onChange={(e) => setOpenLane(e.target.value)}
+						placeholder="Paste the lane UUID for a lane-only open"
+						hint="Pick a session above to choose from its lanes instead."
+					/>
+				)}
+				<Button variant="primary" loading={openBusy} onClick={openLotNow}>
+					Open lot
 				</Button>
 			</div>
 

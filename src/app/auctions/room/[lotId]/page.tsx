@@ -11,6 +11,8 @@ import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import Input from "@/components/ui/Input";
 import CountdownRing from "@/components/auctions/CountdownRing";
+import LaneSwitcher from "@/components/auctions/LaneSwitcher";
+import { useAuctionSession } from "@/hooks/useAuctions";
 import BuyingPowerMeter from "@/components/auctions/BuyingPowerMeter";
 import { useBuyingPower } from "@/hooks/useAuctions";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
@@ -21,6 +23,7 @@ export default function AuctionRoomPage() {
 	const { lotId } = useParams<{ lotId: string }>();
 	const { isLoggedIn } = useAuth();
 	const { lot } = useAuctionLot(lotId);
+	const { session } = useAuctionSession(lot?.session_id ?? null);
 	const { connection, state, myMax, rejection, sending, placeBid, clearRejection } =
 		useAuctionRoom(lotId);
 	const { power } = useBuyingPower();
@@ -88,6 +91,16 @@ export default function AuctionRoomPage() {
 					</span>
 				</div>
 
+				{session && session.lanes.length > 1 && (
+					<div className="mt-3">
+						<LaneSwitcher
+							lanes={session.lanes}
+							lots={session.lots}
+							currentLotId={lotId}
+						/>
+					</div>
+				)}
+
 				{connection !== "live" && (
 					<div className="mt-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-xs font-medium text-amber-800">
 						{connection === "offline"
@@ -107,7 +120,7 @@ export default function AuctionRoomPage() {
 									{state.price > 0 ? formatKES(state.price) : "Opening soon"}
 								</p>
 								<p className="text-xs text-neutral-400 mt-1">
-									{state.version >= 0 ? `${state.version} bids` : "Waiting for the room…"}
+									{state.version >= 0 ? `${state.bidCount} ${state.bidCount === 1 ? "bid" : "bids"}` : "Waiting for the room…"}
 								</p>
 								{state.reserveMet != null && (
 									<p

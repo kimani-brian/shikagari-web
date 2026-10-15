@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import auctionApi from "@/lib/auction";
-import { AuctionLot, BuyingPower, PreBid } from "@/types/auction";
+import { AuctionLot, BuyingPower, PreBid, SessionDetail } from "@/types/auction";
 
 export function useAuctionLot(id: string) {
 	const [lot, setLot] = useState<AuctionLot | null>(null);
@@ -28,6 +28,39 @@ export function useAuctionLot(id: string) {
 	}, [fetchLot]);
 
 	return { lot, loading, error, refetch: fetchLot };
+}
+
+export function useAuctionSession(id: string | null) {
+	const [session, setSession] = useState<SessionDetail | null>(null);
+
+	// Reset when the lot (and therefore its session) changes. This is the
+	// documented render-phase adjustment, not an effect write, so a stale
+	// session never flashes while the new one loads.
+	const [prevId, setPrevId] = useState(id);
+	if (prevId !== id) {
+		setPrevId(id);
+		setSession(null);
+	}
+
+	useEffect(() => {
+		if (!id) {
+			return;
+		}
+		let cancelled = false;
+		(async () => {
+			try {
+				const res = await auctionApi.get(`/auctions/${id}`);
+				if (!cancelled) setSession(res.data.data ?? null);
+			} catch {
+				if (!cancelled) setSession(null);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [id]);
+
+	return { session };
 }
 
 export function useBuyingPower() {

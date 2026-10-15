@@ -19,6 +19,7 @@ export interface RoomSnapshot {
 export interface RoomState {
 	price: number;
 	version: number;
+	bidCount: number;
 	deadlineAt: number | null;
 	leaderId: string | null;
 	iLead: boolean;
@@ -45,6 +46,7 @@ export function useAuctionRoom(lotId: string) {
 	const [state, setState] = useState<RoomState>({
 		price: 0,
 		version: -1,
+		bidCount: 0,
 		deadlineAt: null,
 		leaderId: null,
 		iLead: false,
@@ -100,6 +102,7 @@ export function useAuctionRoom(lotId: string) {
 					...prev,
 					price: Number(d.current_price ?? prev.price),
 					iLead: Boolean(d.you_lead),
+					bidCount: typeof d.bid_count === "number" ? d.bid_count : prev.bidCount,
 					version: msg.version ?? prev.version,
 					deadlineAt: d.deadline_at ? Date.parse(String(d.deadline_at)) : null,
 					reserveMet:
@@ -123,6 +126,7 @@ export function useAuctionRoom(lotId: string) {
 					return {
 						...prev,
 						price: Number(d.amount_kes ?? prev.price),
+						bidCount: prev.bidCount + 1,
 						version: msg.version ?? prev.version,
 						reserveMet:
 							typeof d.reserve_met === "boolean"
