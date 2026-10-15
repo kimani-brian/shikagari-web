@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import auctionApi from "@/lib/auction";
@@ -14,6 +14,7 @@ import Input from "@/components/ui/Input";
 import Icon from "@/components/ui/Icon";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { formatKES, formatMileage, timeAgo } from "@/lib/utils";
+import { CounterOfferView } from "@/types/settlement";
 import { cn } from "@/lib/utils";
 
 // Image URLs from the frozen snapshot may be marketplace-relative paths.
@@ -25,6 +26,7 @@ function imgSrc(path: string) {
 
 export default function AuctionLotPage() {
 	const { id } = useParams<{ id: string }>();
+	const router = useRouter();
 	const { isLoggedIn } = useAuth();
 	const { lot, loading, error, refetch } = useAuctionLot(id);
 	const { power, refetch: refetchPower } = useBuyingPower();
@@ -32,6 +34,30 @@ export default function AuctionLotPage() {
 	const [maxAmount, setMaxAmount] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [activePhoto, setActivePhoto] = useState(0);
+	const [counter, setCounter] = useState<CounterOfferView | null>(null);
+
+	useEffect(() => {
+		if (!isLoggedIn || lot?.status !== "pending_approval") {
+			setCounter(null);
+			return;
+		}
+		let cancelled = false;
+		(async () => {
+			try {
+				const res = await auctionApi.get("/me/offers");
+				if (cancelled) return;
+				const mine = (res.data.data ?? []).find(
+					(o: CounterOfferView) => o.lot_id === lot.id && o.status === "pending"
+				);
+				setCounter(mine ?? null);
+			} catch {
+				if (!cancelled) setCounter(null);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [isLoggedIn, lot?.id, lot?.status]);
 
 	if (loading) return <PageLoader />;
 
@@ -75,6 +101,28 @@ export default function AuctionLotPage() {
 			const data = (err as { response?: { data?: { error?: { message?: string } } } })
 				?.response?.data?.error;
 			toast.error(data?.message ?? "Could not place your pre-bid.");
+		} finally {
+			setBusy(false);
+		}
+	};
+
+	const answerCounter = async (accept: boolean) => {
+		if (!counter) return;
+		try {
+			setBusy(true);
+			await auctionApi.post(`/offers/${counter.id}/${accept ? "accept" : "decline"}`);
+			if (accept) {
+				toast.success("Offer accepted. Your invoice is ready.");
+				router.push("/auctions/me/invoices");
+			} else {
+				toast.success("Offer declined.");
+				setCounter(null);
+				refetch();
+			}
+		} catch (err: unknown) {
+			const data = (err as { response?: { data?: { error?: { message?: string } } } })
+				?.response?.data?.error;
+			toast.error(data?.message ?? "Could not answer the offer.");
 		} finally {
 			setBusy(false);
 		}
@@ -221,6 +269,38 @@ export default function AuctionLotPage() {
 									<p className="text-xs text-neutral-400 mt-2 text-center">
 										Guests can look, but only signed-in buyers can bid.
 									</p>
+								</div>
+							) : counter ? (
+								<div className="mt-4 space-y-3 rounded-xl bg-neutral-900 text-white p-4">
+									<p className="text-xs uppercase tracking-wider text-neutral-400">
+										The dealer countered
+									</p>
+									<p className="text-2xl font-bold tabular-nums">
+										{formatKES(counter.amount_kes)}
+									</p>
+									<p className="text-xs text-neutral-300">
+										Answer within 24 hours. Accepting binds you to pay.
+									</p>
+									<div className="flex gap-2">
+										<Button
+											variant="primary"
+											fullWidth
+											loading={busy}
+											onClick={() => answerCounter(true)}
+											className="!bg-white !text-neutral-900 hover:!bg-neutral-200"
+										>
+											Accept
+										</Button>
+										<Button
+											variant="secondary"
+											fullWidth
+											disabled={busy}
+											onClick={() => answerCounter(false)}
+											className="!border-white/30 !text-white hover:!bg-white/10"
+										>
+											Decline
+										</Button>
+									</div>
 								</div>
 							) : liveNow ? (
 								<div className="mt-4 space-y-3">
