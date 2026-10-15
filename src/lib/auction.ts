@@ -27,5 +27,13 @@ auctionApi.interceptors.request.use((config) => {
 	return config;
 });
 
+// WebSocket URL derived from the API base: http(s) becomes ws(s), and the
+// marketplace token travels as a query parameter because sockets cannot set
+// headers. The token is never logged.
+export function auctionSocketUrl(token?: string | null) {
+	const ws = AUCTION_API_URL.replace(/^http/, "ws");
+	return token ? `${ws}/ws?token=${encodeURIComponent(token)}` : `${ws}/ws`;
+}
+
 export default auctionApi;
 export { AUCTION_API_URL };

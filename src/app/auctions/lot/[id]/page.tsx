@@ -50,6 +50,7 @@ export default function AuctionLotPage() {
 		);
 	}
 
+	const liveNow = lot.status === "on_block" || lot.status === "open";
 	const v = lot.vehicle ?? ({} as Record<string, string | number | string[]>);
 	const photos = (Array.isArray(v.images) ? v.images : []) as string[];
 	const current = photos[activePhoto] ?? photos[0];
@@ -219,6 +220,17 @@ export default function AuctionLotPage() {
 									</Link>
 									<p className="text-xs text-neutral-400 mt-2 text-center">
 										Guests can look, but only signed-in buyers can bid.
+									</p>
+								</div>
+							) : liveNow ? (
+								<div className="mt-4 space-y-3">
+									<Link href={`/auctions/room/${lot.id}`}>
+										<Button variant="primary" fullWidth size="lg">
+											Join the live room
+										</Button>
+									</Link>
+									<p className="text-xs text-neutral-400 text-center">
+										This lot is on the block right now.
 									</p>
 								</div>
 							) : preBiddingOpen ? (
