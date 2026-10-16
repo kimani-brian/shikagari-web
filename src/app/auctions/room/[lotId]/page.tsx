@@ -12,6 +12,7 @@ import Icon from "@/components/ui/Icon";
 import Input from "@/components/ui/Input";
 import CountdownRing from "@/components/auctions/CountdownRing";
 import LaneSwitcher from "@/components/auctions/LaneSwitcher";
+import TermsGate, { hasAcknowledgedTerms, acknowledgeTerms } from "@/components/auctions/TermsGate";
 import { useAuctionSession } from "@/hooks/useAuctions";
 import BuyingPowerMeter from "@/components/auctions/BuyingPowerMeter";
 import { useBuyingPower } from "@/hooks/useAuctions";
@@ -21,14 +22,33 @@ import { cn } from "@/lib/utils";
 
 export default function AuctionRoomPage() {
 	const { lotId } = useParams<{ lotId: string }>();
-	const { isLoggedIn } = useAuth();
-	const { lot } = useAuctionLot(lotId);
+	const { isLoggedIn, user } = useAuth();
+	const { lot, loading: lotLoading, error: lotError } = useAuctionLot(lotId);
 	const { session } = useAuctionSession(lot?.session_id ?? null);
 	const { connection, state, myMax, rejection, sending, placeBid, clearRejection } =
 		useAuctionRoom(lotId);
 	const { power } = useBuyingPower();
 	const [custom, setCustom] = useState("");
 	const [flash, setFlash] = useState(false);
+	const [termsOpen, setTermsOpen] = useState(false);
+	const [pendingBid, setPendingBid] = useState<number | null>(null);
+
+	// LIC-6: no bid leaves this room before the buyer accepts the terms of
+	// sale once. The pending amount fires after acknowledgement.
+	const gatedBid = (amount: number) => {
+		if (user && !hasAcknowledgedTerms(user.id)) {
+			setPendingBid(amount);
+			setTermsOpen(true);
+			return;
+		}
+		placeBid(amount);
+	};
+	const acceptTerms = () => {
+		if (user) acknowledgeTerms(user.id);
+		setTermsOpen(false);
+		if (pendingBid != null) placeBid(pendingBid);
+		setPendingBid(null);
+	};
 
 	// The soft-close flash is momentary by design. Both state changes live
 	// in timer callbacks, never in the effect body.
@@ -53,9 +73,24 @@ export default function AuctionRoomPage() {
 		if (!amount || (state.price > 0 && amount <= state.price)) {
 			return;
 		}
-		placeBid(amount);
+		gatedBid(amount);
 		setCustom("");
 	};
+
+	if (!lotLoading && (lotError || !lot)) {
+		return (
+			<div className="bg-white min-h-screen">
+				<PageWrapper className="py-14 max-w-lg">
+					<p className="text-sm text-neutral-500">This auction room does not exist.</p>
+					<Link href="/auctions" className="inline-block mt-4">
+						<Button variant="secondary" size="sm">
+							Back to auctions
+						</Button>
+					</Link>
+				</PageWrapper>
+			</div>
+		);
+	}
 
 	return (
 		<div className="bg-white min-h-screen">
@@ -141,14 +176,23 @@ export default function AuctionRoomPage() {
 							</div>
 						)}
 
+						{/* Persistent live region: outbid announcements must reach screen
+						    readers even though the visible banner mounts and unmounts. */}
+						<div aria-live="polite" className="sr-only">
+							{state.outbidNotice && !ended ? state.outbidNotice : ""}
+						</div>
 						{state.outbidNotice && !ended && (
-							<div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 text-xs font-semibold text-red-700">
+							<div aria-hidden="true" className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 text-xs font-semibold text-red-700">
 								{state.outbidNotice}
 							</div>
 						)}
 
 						{state.result && (
-							<div className="rounded-2xl border border-neutral-900 bg-neutral-900 text-white p-5">
+							<div
+								className="rounded-2xl border border-neutral-900 bg-neutral-900 text-white p-5"
+								role="status"
+								aria-live="assertive"
+							>
 								<p className="text-xs uppercase tracking-wider text-neutral-400">
 									{state.result.outcome === "sold"
 										? "Hammer — sold"
@@ -201,33 +245,42 @@ export default function AuctionRoomPage() {
 											. You will never pay more than this.
 										</p>
 									)}
+								<Button
+									variant="primary"
+									fullWidth
+									size="lg"
+									type="button"
+									className="min-h-[56px]"
+									loading={sending}
+									disabled={!canBid}
+									onClick={() => gatedBid(nextBid)}
+								>
+									Bid {formatKES(nextBid)}
+								</Button>
+								<form
+									className="flex gap-2"
+									onSubmit={(e) => {
+										e.preventDefault();
+										submitCustom();
+									}}
+								>
+									<Input
+										label=""
+										aria-label="Custom bid amount"
+										type="text"
+										inputMode="numeric"
+										value={custom}
+										onChange={(e) => setCustom(e.target.value)}
+										placeholder="Bid more"
+									/>
 									<Button
-										variant="primary"
-										fullWidth
-										size="lg"
-										loading={sending}
-										disabled={!canBid}
-										onClick={() => placeBid(nextBid)}
+										variant="secondary"
+										type="submit"
+										disabled={!canBid || sending}
 									>
-										Bid {formatKES(nextBid)}
+										Bid
 									</Button>
-									<div className="flex gap-2">
-										<Input
-											label=""
-											type="text"
-											inputMode="numeric"
-											value={custom}
-											onChange={(e) => setCustom(e.target.value)}
-											placeholder="Bid more"
-										/>
-										<Button
-											variant="secondary"
-											disabled={!canBid || sending}
-											onClick={submitCustom}
-										>
-											Bid
-										</Button>
-									</div>
+								</form>
 									{rejection && (
 										<div className="rounded-xl bg-neutral-50 border border-neutral-200 px-3 py-2 text-xs text-neutral-700 flex items-start justify-between gap-2">
 											<span>{rejection}</span>
@@ -267,23 +320,39 @@ export default function AuctionRoomPage() {
 						</div>
 					</div>
 				</div>
-			</PageWrapper>
+		</PageWrapper>
 
-			{/* Mobile sticky bid bar — the thumb never travels. */}
-			{isLoggedIn && !ended && (
+			<TermsGate
+				key={String(termsOpen)}
+				open={termsOpen}
+				onAcknowledge={acceptTerms}
+				onCancel={() => {
+					setTermsOpen(false);
+					setPendingBid(null);
+				}}
+			/>
+
+			{/* Mobile sticky bid bar — the thumb never travels. The spacer keeps
+		    page content from sliding underneath the fixed bar. */}
+		{isLoggedIn && !ended && (
+			<>
+				<div aria-hidden="true" className="h-24 lg:hidden" />
 				<div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
 					<Button
 						variant="primary"
 						fullWidth
 						size="lg"
+						type="button"
+						className="min-h-[56px]"
 						loading={sending}
 						disabled={!canBid}
-						onClick={() => placeBid(nextBid)}
+						onClick={() => gatedBid(nextBid)}
 					>
 						{state.iLead ? `Leading — ${formatKES(state.price)}` : `Bid ${formatKES(nextBid)}`}
 					</Button>
 				</div>
-			)}
+			</>
+		)}
 		</div>
 	);
 }

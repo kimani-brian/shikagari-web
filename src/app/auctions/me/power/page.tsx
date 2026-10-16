@@ -92,7 +92,13 @@ export default function BuyingPowerPage() {
 					/>
 				</div>
 
-				<div className="mt-4 rounded-2xl border border-neutral-200 p-5 space-y-3">
+				<form
+					className="mt-4 rounded-2xl border border-neutral-200 p-5 space-y-3"
+					onSubmit={(e) => {
+						e.preventDefault();
+						topUp();
+					}}
+				>
 					<h2 className="text-sm font-semibold text-neutral-900">
 						Top up with M-Pesa
 					</h2>
@@ -114,13 +120,13 @@ export default function BuyingPowerPage() {
 						placeholder="400000"
 						required
 					/>
-					<Button variant="primary" fullWidth loading={busy} onClick={topUp}>
+					<Button variant="primary" fullWidth type="submit" loading={busy}>
 						Send deposit request
 					</Button>
 					<p className="text-xs text-neutral-400">
 						You will get an M-Pesa prompt on your phone to approve.
 					</p>
-				</div>
+				</form>
 			</PageWrapper>
 		</div>
 	);

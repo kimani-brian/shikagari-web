@@ -171,7 +171,13 @@ export default function InvoicePage() {
 				)}
 
 				{payable ? (
-					<div className="mt-4 rounded-2xl border border-neutral-200 p-5 space-y-3">
+					<form
+						className="mt-4 rounded-2xl border border-neutral-200 p-5 space-y-3"
+						onSubmit={(e) => {
+							e.preventDefault();
+							pay();
+						}}
+					>
 						<h2 className="text-sm font-semibold text-neutral-900">
 							Pay with M-Pesa
 						</h2>
@@ -184,10 +190,10 @@ export default function InvoicePage() {
 							autoComplete="tel"
 							required
 						/>
-						<Button variant="primary" fullWidth loading={paying} onClick={pay}>
+						<Button variant="primary" fullWidth type="submit" loading={paying}>
 							Pay {formatKES(invoice.total_kes)}
 						</Button>
-					</div>
+					</form>
 				) : invoice.status === "defaulted" ? (
 					<div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-5">
 						<p className="text-sm text-red-800 leading-relaxed">

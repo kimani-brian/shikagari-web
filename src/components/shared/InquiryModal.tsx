@@ -41,16 +41,45 @@ export default function InquiryModal({
   const { isLoggedIn } = useAuth();
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const [sending, setSending] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Escape closes the popup the same way a backdrop click does.
+  // Escape closes the popup the same way a backdrop click does. Tab cycles
+  // inside the dialog so keyboard users cannot fall behind it, and focus
+  // returns to the invoking element on close.
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialogRef.current
+      ?.querySelector<HTMLElement>("textarea, button:not([data-autofocus-skip])")
+      ?.focus();
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeRef.current();
+      if (e.key === "Escape") {
+        closeRef.current();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const items = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus?.();
+    };
   }, []);
 
   const handleSend = async () => {
@@ -91,6 +120,7 @@ export default function InquiryModal({
       <div className="absolute inset-0 bg-neutral-900/30" onClick={onClose} />
 
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Contact seller"

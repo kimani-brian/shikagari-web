@@ -75,3 +75,17 @@
     display: none;
   }
 }
+
+/* Motion accessibility (design.md §10): when the OS asks for reduced motion,
+   every animation and transition becomes an instant state change. The auction
+   countdown keeps working — only its pulse goes quiet. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

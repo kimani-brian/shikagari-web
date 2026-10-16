@@ -313,34 +313,40 @@ export default function AuctionLotPage() {
 										This lot is on the block right now.
 									</p>
 								</div>
-							) : preBiddingOpen ? (
-								<div className="mt-4 space-y-3">
-									<Input
-										label="Your maximum bid (KES)"
-										type="text"
-										inputMode="numeric"
-										value={maxAmount}
-										onChange={(e) => setMaxAmount(e.target.value)}
-										placeholder={String(lot.opening_bid_kes)}
-										hint="The system bids for you up to this amount — never above it."
-									/>
-									<Button
-										variant="primary"
-										fullWidth
-										loading={busy}
-										onClick={submitPreBid}
-									>
-										Place pre-bid
-									</Button>
-									<button
-										type="button"
-										onClick={withdrawPreBid}
-										disabled={busy}
-										className="w-full text-xs font-semibold text-neutral-500 hover:text-neutral-900 disabled:opacity-50"
-									>
-										Withdraw my pre-bid
-									</button>
-								</div>
+						) : preBiddingOpen ? (
+							<form
+								className="mt-4 space-y-3"
+								onSubmit={(e) => {
+									e.preventDefault();
+									submitPreBid();
+								}}
+							>
+								<Input
+									label="Your maximum bid (KES)"
+									type="text"
+									inputMode="numeric"
+									value={maxAmount}
+									onChange={(e) => setMaxAmount(e.target.value)}
+									placeholder={String(lot.opening_bid_kes)}
+									hint="The system bids for you up to this amount — never above it."
+								/>
+								<Button
+									variant="primary"
+									fullWidth
+									type="submit"
+									loading={busy}
+								>
+									Place pre-bid
+								</Button>
+								<button
+									type="button"
+									onClick={withdrawPreBid}
+									disabled={busy}
+									className="w-full text-xs font-semibold text-neutral-500 hover:text-neutral-900 disabled:opacity-50"
+								>
+									Withdraw my pre-bid
+								</button>
+							</form>
 							) : (
 								<p className="text-sm text-neutral-500 mt-4">
 									Pre-bidding has closed for this lot.
