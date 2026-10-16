@@ -51,7 +51,7 @@ export default function DealerOffersPage() {
 		if (!isLoading && isLoggedIn && (user?.role === "dealer" || user?.role === "admin")) {
 			fetchLots();
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		 
 	}, [isLoading, isLoggedIn, user?.role]);
 
 	if (isLoading || loading) return <PageLoader />;

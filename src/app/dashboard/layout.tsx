@@ -8,8 +8,9 @@ import { accountPillLabel, useMyDealerBusinessName } from "@/hooks/useMyDealerPr
 import { cn } from "@/lib/utils";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import {
-  LayoutDashboard, Car, PlusCircle, MessageSquare, Heart, Gavel, Wallet, Receipt,
-  User, ShieldCheck, UserCheck, LogOut, ChevronRight, Bell
+  LayoutDashboard, Car, PlusCircle, MessageSquare, Heart, Gavel, Wallet, Receipt, Bell,
+  FileText, Scale, TableProperties, ScanSearch,
+  User, ShieldCheck, UserCheck, LogOut, ChevronRight
 } from "lucide-react";
 
 const BASE_NAV_ITEMS = [
@@ -20,6 +21,7 @@ const BASE_NAV_ITEMS = [
   { label: "My Bids",       href: "/auctions/me/bids",        icon: Gavel           },
   { label: "Buying Power",  href: "/auctions/me/power",       icon: Wallet          },
   { label: "Invoices",      href: "/auctions/me/invoices",    icon: Receipt         },
+  { label: "Notices",       href: "/dashboard/notices",       icon: Bell            },
   { label: "Inbox",         href: "/dashboard/inbox",         icon: MessageSquare   },
   { label: "Profile",       href: "/dashboard/profile",       icon: User            },
 ];
@@ -34,6 +36,10 @@ const ADMIN_NAV_ITEMS = [
   { label: "Admin",    href: "/dashboard/admin",           icon: ShieldCheck },
   { label: "Dealers", href: "/dashboard/admin/verified",  icon: UserCheck   },
   { label: "Auctions", href: "/dashboard/admin/auctions", icon: Gavel       },
+  { label: "Disputes", href: "/dashboard/admin/disputes", icon: Scale       },
+  { label: "Reconcile", href: "/dashboard/admin/reconciliation", icon: TableProperties },
+  { label: "Fraud review", href: "/dashboard/admin/review", icon: ScanSearch },
+  { label: "Audit log", href: "/dashboard/admin/audit", icon: FileText },
 ];
 
 export default function DashboardLayout({
